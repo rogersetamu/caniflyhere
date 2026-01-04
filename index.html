@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>CanIFlyHere.us | Drone Airspace Check (FAA Awareness)</title>
+  <meta name="description" content="Check a location for FAA drone airspace awareness. See if LAANC is likely needed or if major restrictions are present. Planning tool only, always verify with FAA sources." />
+  <link rel="canonical" href="https://caniflyhere.us/" />
+
+  <meta property="og:title" content="CanIFlyHere.us | Drone Airspace Check" />
+  <meta property="og:description" content="Quick drone airspace awareness using FAA data sources. Planning tool only, always verify with FAA sources." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://caniflyhere.us/" />
+
+  <meta name="robots" content="index,follow" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.30/"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">✈️</div>
+      <div>
+        <div class="title">CanIFlyHere.us</div>
+        <div class="subtitle">Quick drone airspace awareness using FAA data sources (planning tool)</div>
+      </div>
+    </div>
+
+    <nav class="links">
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <span class="sep">|</span>
+      <a href="https://www.faa.gov/uas" target="_blank" rel="noopener noreferrer">FAA UAS</a>
+      <a href="https://tfr.faa.gov" target="_blank" rel="noopener noreferrer">TFRs</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>Check a location</h2>
+
+      <div class="controlRow">
+        <button id="btnLocate" class="btn primary">Use my location</button>
+        <button id="btnClear" class="btn">Clear</button>
+      </div>
+
+      <div class="inputGroup">
+        <label for="lat">Latitude</label>
+        <input id="lat" inputmode="decimal" placeholder="e.g. 30.6280" autocomplete="off" />
+      </div>
+
+      <div class="inputGroup">
+        <label for="lng">Longitude</label>
+        <input id="lng" inputmode="decimal" placeholder="e.g. -96.3344" autocomplete="off" />
+      </div>
+
+      <button id="btnGo" class="btn primary wide">Check these coordinates</button>
+
+      <div class="adSlot" aria-label="Advertisement">
+        <div class="adLabel">Advertisement</div>
+        <div id="ad-slot-top" class="adBox">
+          Ad slot (enable after AdSense approval)
+        </div>
+      </div>
+
+      <hr />
+
+      <h3>Results</h3>
+      <div id="status" class="status muted">Pick a point (click map) or enter coordinates.</div>
+
+      <div id="results" class="results"></div>
+
+      <div class="disclaimer">
+        <strong>Important:</strong> This is a planning tool for awareness, not flight approval.
+        Rules vary (Part 107 vs Recreational). You may need LAANC authorization in controlled airspace,
+        and <strong>TFRs change fast</strong>. Always verify using official FAA sources before flight.
+      </div>
+    </section>
+
+    <section class="mapWrap">
+      <div id="viewDiv"></div>
+      <div class="mapHint">Tip: click anywhere on the map to run a check.</div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footerInner">
+      <div>
+        Data layers shown are sourced from FAA ArcGIS open data services and related FAA references.
+      </div>
+      <div class="adSlot footerAd" aria-label="Advertisement">
+        <div class="adLabel">Advertisement</div>
+        <div id="ad-slot-footer" class="adBox">
+          Footer ad slot (optional)
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
