@@ -2,16 +2,11 @@
   CanIFlyHere.us – enhanced JS logic
 
   This module drives the interactive map and verdict logic for the
-  CanIFlyHere.us planning tool.  It fixes several issues from the
-  original implementation:
-    • Properly updates verdict text by targeting the correct class
-      names and updating the verdict pill.
-    • Adds a fully functional "Use my location" button utilizing
-      the browser’s geolocation API with graceful fallback on failure.
-    • Styles result cards with a key–value grid for better
-      readability.
-  The tool remains a planning aid only; always verify flight
-  restrictions with official FAA sources.
+  CanIFlyHere.us planning tool.
+
+  NOTE:
+  - No verdict card UI is used anymore (only the status bar + result cards).
+  - Always verify with official FAA sources.
 */
 
 require([
@@ -45,14 +40,21 @@ require([
   const btnGo     = document.getElementById("btnGo");
   const btnLocate = document.getElementById("btnLocate");
   const btnClear  = document.getElementById("btnClear");
+
+  // Guard: if homepage DOM isn't present, don't run (prevents errors if app.js loads elsewhere)
+  if (!statusEl || !resultsEl || !latEl || !lngEl || !btnGo || !btnLocate || !btnClear) {
+    console.warn("CanIFlyHere: required DOM elements not found. app.js not initialized.");
+    return;
+  }
+
   function setStatus(msg, state = "muted") {
     statusEl.textContent = msg;
+    // if state is "" or null, don't add extra class
     statusEl.className = "status" + (state ? (" " + state) : "");
   }
 
   function clearResults() {
     resultsEl.innerHTML = "";
-  }
   }
 
   function addCard(title, badge, kind, rows) {
@@ -61,22 +63,28 @@ require([
 
     const head = document.createElement("div");
     head.className = "cardTitle";
+
     const t = document.createElement("div");
     t.textContent = title;
+
     const b = document.createElement("div");
     b.className = `badge ${kind}`;
     b.textContent = badge;
+
     head.appendChild(t);
     head.appendChild(b);
 
     const kv = document.createElement("div");
     kv.className = "kv";
+
     rows.forEach(([k, v]) => {
       const kk = document.createElement("div");
       kk.className = "k";
       kk.textContent = k;
+
       const vv = document.createElement("div");
       vv.textContent = v;
+
       kv.appendChild(kk);
       kv.appendChild(vv);
     });
@@ -98,6 +106,7 @@ require([
       })
     });
   }
+
   function pointRenderer(color) {
     return new SimpleRenderer({
       symbol: new SimpleMarkerSymbol({
@@ -142,6 +151,7 @@ require([
   /* ---------------- Map Init ---------------- */
   const map = new Map({ basemap: "streets-navigation-vector" });
   const featureLayers = {};
+
   LAYERS.forEach(cfg => {
     const layer = new FeatureLayer({
       url: cfg.url,
@@ -161,8 +171,10 @@ require([
   });
 
   let pin = null;
+
   function placePin(point) {
     if (pin) view.graphics.remove(pin);
+
     pin = new Graphic({
       geometry: point,
       symbol: {
@@ -172,6 +184,7 @@ require([
         outline: { color: [255, 255, 255], width: 2 }
       }
     });
+
     view.graphics.add(pin);
   }
 
@@ -183,6 +196,7 @@ require([
     q.returnGeometry = false;
     q.outFields = ["*"];
     q.num = 1;
+
     const res = await layer.queryFeatures(q);
     return res.features || [];
   }
@@ -190,27 +204,34 @@ require([
   async function runCheck(point) {
     clearResults();
     setStatus("Checking FAA airspace data…", "");
+
     let danger = false;
     let caution = false;
+
     for (const cfg of LAYERS) {
       const feats = await queryLayer(featureLayers[cfg.key], point);
       if (feats.length > 0) {
         const attrs = feats[0].attributes;
+
         const rows = cfg.fields
           .filter(f => attrs[f] !== undefined)
           .map(f => [f, String(attrs[f])]);
+
         addCard(cfg.title, cfg.hitBadge, cfg.hitKind, rows);
+
         if (cfg.hitKind === "bad") danger = true;
         if (cfg.hitKind === "warn") caution = true;
       }
     }
+
     if (danger) {
-      setStatus("Do not fly — FAA‑restricted airspace detected at this point.", "bad");
+      setStatus("Do not fly — FAA-restricted airspace detected at this point.", "bad");
     } else if (caution) {
       setStatus("Authorization likely — controlled airspace detected (LAANC may be required).", "warn");
     } else {
       setStatus("Looks clear — no key FAA restrictions detected. Still verify TFRs and local rules.", "good");
     }
+  }
 
   /* ---------------- Events ---------------- */
   view.on("click", async e => {
@@ -219,55 +240,85 @@ require([
       longitude: e.mapPoint.longitude,
       spatialReference: { wkid: 4326 }
     });
+
     latEl.value = p.latitude.toFixed(6);
     lngEl.value = p.longitude.toFixed(6);
+
     placePin(p);
     view.goTo({ center: [p.longitude, p.latitude], zoom: 12 });
+
     await runCheck(p);
   });
 
   btnGo.addEventListener("click", async () => {
     const lat = parseFloat(latEl.value);
     const lng = parseFloat(lngEl.value);
+
     if (isNaN(lat) || isNaN(lng)) {
       setStatus("Enter valid coordinates.", "bad");
       return;
     }
-    const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
+
+    const p = new Point({
+      latitude: lat,
+      longitude: lng,
+      spatialReference: { wkid: 4326 }
+    });
+
     placePin(p);
     view.goTo({ center: [lng, lat], zoom: 12 });
+
     await runCheck(p);
   });
 
   btnClear.addEventListener("click", () => {
     latEl.value = "";
     lngEl.value = "";
+
     clearResults();
+
     if (pin) view.graphics.remove(pin);
     pin = null;
+
     setStatus("Click the map or enter coordinates to check.", "muted");
   });
 
-  // Handle geolocation on "Use my location" button
   btnLocate.addEventListener("click", () => {
     if (!navigator.geolocation) {
       setStatus("Geolocation not supported in this browser.", "bad");
       return;
     }
+
+    setStatus("Getting your location…", "");
+
     navigator.geolocation.getCurrentPosition(
       async pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
         latEl.value = lat.toFixed(6);
         lngEl.value = lng.toFixed(6);
-        const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
+
+        const p = new Point({
+          latitude: lat,
+          longitude: lng,
+          spatialReference: { wkid: 4326 }
+        });
+
         placePin(p);
         view.goTo({ center: [lng, lat], zoom: 12 });
+
         await runCheck(p);
       },
-      () => {
-        setStatus("Unable to access your location.", "bad");
-      }
+      (err) => {
+        // common reasons: denied, timeout, unavailable
+        setStatus("Unable to access your location (permission denied or unavailable).", "bad");
+        console.warn("Geolocation error:", err);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
   });
+
+  // Initial message
+  setStatus("Tip: click anywhere on the map to run a check.", "muted");
 });
