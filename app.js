@@ -1,13 +1,17 @@
 /*
-  CanIFlyHere.us - Pilot friendly FAA layer check (planning tool)
+  CanIFlyHere.us – enhanced JS logic
 
-  Verdict logic:
-  - DO NOT FLY: National Security UAS Flight Restrictions (full or part time) OR Prohibited Areas
-  - LAANC LIKELY: UAS Facility Map grid hit (shows ceiling)
-  - OK: none of the above detected
-
-  Notes:
-  - This is not a TFR feed. TFRs change fast. Always verify official FAA sources.
+  This module drives the interactive map and verdict logic for the
+  CanIFlyHere.us planning tool.  It fixes several issues from the
+  original implementation:
+    • Properly updates verdict text by targeting the correct class
+      names and updating the verdict pill.
+    • Adds a fully functional "Use my location" button utilizing
+      the browser’s geolocation API with graceful fallback on failure.
+    • Styles result cards with a key–value grid for better
+      readability.
+  The tool remains a planning aid only; always verify flight
+  restrictions with official FAA sources.
 */
 
 require([
@@ -33,17 +37,20 @@ require([
   SimpleLineSymbol,
   SimpleMarkerSymbol
 ) {
+  /* ---------------- DOM references ---------------- */
+  const statusEl  = document.getElementById("status");
+  const resultsEl = document.getElementById("results");
+  const verdictEl = document.getElementById("verdict");
+  const latEl     = document.getElementById("lat");
+  const lngEl     = document.getElementById("lng");
+  const btnGo     = document.getElementById("btnGo");
+  const btnLocate = document.getElementById("btnLocate");
+  const btnClear  = document.getElementById("btnClear");
 
-  /* ---------------- DOM ---------------- */
-
-  const statusEl   = document.getElementById("status");
-  const resultsEl  = document.getElementById("results");
-  const verdictEl  = document.getElementById("verdict");
-  const latEl      = document.getElementById("lat");
-  const lngEl      = document.getElementById("lng");
-  const btnGo      = document.getElementById("btnGo");
-  const btnLocate  = document.getElementById("btnLocate");
-  const btnClear   = document.getElementById("btnClear");
+  // Elements inside verdict
+  const verdictTitleEl = verdictEl ? verdictEl.querySelector(".verdict-title") : null;
+  const verdictMsgEl   = verdictEl ? verdictEl.querySelector(".verdict-message") : null;
+  const verdictPillEl  = document.getElementById("verdictPill");
 
   // Ensure verdict NEVER shows on load
   if (verdictEl) verdictEl.classList.add("hidden");
@@ -60,9 +67,17 @@ require([
 
   function setVerdict(type, title, message) {
     if (!verdictEl) return;
-    verdictEl.className = `verdict ${type}`;
-    verdictEl.querySelector(".verdict-title").textContent = title;
-    verdictEl.querySelector(".verdict-message").textContent = message;
+    // reset and assign type classes
+    verdictEl.className = "verdict";
+    verdictEl.classList.add(type);
+    // update title and message if present
+    if (verdictTitleEl) verdictTitleEl.textContent = title;
+    if (verdictMsgEl) verdictMsgEl.textContent   = message;
+    // update the pill text and classes
+    if (verdictPillEl) {
+      verdictPillEl.className = "pill " + type;
+      verdictPillEl.textContent = type === "good" ? "OK" : type === "warn" ? "LAANC likely" : "Do not fly";
+    }
     verdictEl.classList.remove("hidden");
   }
 
@@ -72,28 +87,22 @@ require([
 
     const head = document.createElement("div");
     head.className = "cardTitle";
-
     const t = document.createElement("div");
     t.textContent = title;
-
     const b = document.createElement("div");
     b.className = `badge ${kind}`;
     b.textContent = badge;
-
     head.appendChild(t);
     head.appendChild(b);
 
     const kv = document.createElement("div");
     kv.className = "kv";
-
     rows.forEach(([k, v]) => {
       const kk = document.createElement("div");
       kk.className = "k";
       kk.textContent = k;
-
       const vv = document.createElement("div");
       vv.textContent = v;
-
       kv.appendChild(kk);
       kv.appendChild(vv);
     });
@@ -104,7 +113,6 @@ require([
   }
 
   /* ---------------- Map styling ---------------- */
-
   function polygonRenderer(color, opacity) {
     return new SimpleRenderer({
       symbol: new SimpleFillSymbol({
@@ -116,7 +124,6 @@ require([
       })
     });
   }
-
   function pointRenderer(color) {
     return new SimpleRenderer({
       symbol: new SimpleMarkerSymbol({
@@ -127,8 +134,7 @@ require([
     });
   }
 
-  /* ---------------- FAA Layers (ONLY IMPORTANT) ---------------- */
-
+  /* ---------------- FAA Layers ---------------- */
   const LAYERS = [
     {
       key: "uasfm",
@@ -160,10 +166,8 @@ require([
   ];
 
   /* ---------------- Map Init ---------------- */
-
   const map = new Map({ basemap: "streets-navigation-vector" });
   const featureLayers = {};
-
   LAYERS.forEach(cfg => {
     const layer = new FeatureLayer({
       url: cfg.url,
@@ -183,7 +187,6 @@ require([
   });
 
   let pin = null;
-
   function placePin(point) {
     if (pin) view.graphics.remove(pin);
     pin = new Graphic({
@@ -199,7 +202,6 @@ require([
   }
 
   /* ---------------- Query Logic ---------------- */
-
   async function queryLayer(layer, point) {
     const q = layer.createQuery();
     q.geometry = geometryEngine.geodesicBuffer(point, 250, "meters");
@@ -214,10 +216,8 @@ require([
   async function runCheck(point) {
     clearResults();
     setStatus("Checking FAA airspace data…", false);
-
     let danger = false;
     let caution = false;
-
     for (const cfg of LAYERS) {
       const feats = await queryLayer(featureLayers[cfg.key], point);
       if (feats.length > 0) {
@@ -225,19 +225,16 @@ require([
         const rows = cfg.fields
           .filter(f => attrs[f] !== undefined)
           .map(f => [f, String(attrs[f])]);
-
         addCard(cfg.title, cfg.hitBadge, cfg.hitKind, rows);
-
         if (cfg.hitKind === "bad") danger = true;
         if (cfg.hitKind === "warn") caution = true;
       }
     }
-
     if (danger) {
       setVerdict(
         "bad",
         "Do not fly",
-        "This location falls within FAA-restricted airspace."
+        "This location falls within FAA‑restricted airspace."
       );
     } else if (caution) {
       setVerdict(
@@ -252,19 +249,16 @@ require([
         "No key FAA restrictions detected at this point. Always verify TFRs and local rules."
       );
     }
-
     setStatus("Check complete.", true);
   }
 
   /* ---------------- Events ---------------- */
-
   view.on("click", async e => {
     const p = new Point({
       latitude: e.mapPoint.latitude,
       longitude: e.mapPoint.longitude,
       spatialReference: { wkid: 4326 }
     });
-
     latEl.value = p.latitude.toFixed(6);
     lngEl.value = p.longitude.toFixed(6);
     placePin(p);
@@ -294,4 +288,26 @@ require([
     setStatus("Click the map or enter coordinates to check.", true);
   });
 
+  // Handle geolocation on "Use my location" button
+  btnLocate.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      setStatus("Geolocation not supported in this browser.", false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        latEl.value = lat.toFixed(6);
+        lngEl.value = lng.toFixed(6);
+        const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
+        placePin(p);
+        view.goTo({ center: [lng, lat], zoom: 12 });
+        await runCheck(p);
+      },
+      () => {
+        setStatus("Unable to access your location.", false);
+      }
+    );
+  });
 });
