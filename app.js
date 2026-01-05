@@ -40,45 +40,19 @@ require([
   /* ---------------- DOM references ---------------- */
   const statusEl  = document.getElementById("status");
   const resultsEl = document.getElementById("results");
-  const verdictEl = document.getElementById("verdict");
   const latEl     = document.getElementById("lat");
   const lngEl     = document.getElementById("lng");
   const btnGo     = document.getElementById("btnGo");
   const btnLocate = document.getElementById("btnLocate");
   const btnClear  = document.getElementById("btnClear");
-
-  // Elements inside verdict
-  const verdictTitleEl = verdictEl ? verdictEl.querySelector(".verdict-title") : null;
-  const verdictMsgEl   = verdictEl ? verdictEl.querySelector(".verdict-message") : null;
-  const verdictPillEl  = document.getElementById("verdictPill");
-
-  // Ensure verdict NEVER shows on load
-  if (verdictEl) verdictEl.classList.add("hidden");
-
-  function setStatus(msg, muted = true) {
+  function setStatus(msg, state = "muted") {
     statusEl.textContent = msg;
-    statusEl.className = muted ? "status muted" : "status";
+    statusEl.className = "status" + (state ? (" " + state) : "");
   }
 
   function clearResults() {
     resultsEl.innerHTML = "";
-    if (verdictEl) verdictEl.classList.add("hidden");
   }
-
-  function setVerdict(type, title, message) {
-    if (!verdictEl) return;
-    // reset and assign type classes
-    verdictEl.className = "verdict";
-    verdictEl.classList.add(type);
-    // update title and message if present
-    if (verdictTitleEl) verdictTitleEl.textContent = title;
-    if (verdictMsgEl) verdictMsgEl.textContent   = message;
-    // update the pill text and classes
-    if (verdictPillEl) {
-      verdictPillEl.className = "pill " + type;
-      verdictPillEl.textContent = type === "good" ? "OK" : type === "warn" ? "LAANC likely" : "Do not fly";
-    }
-    verdictEl.classList.remove("hidden");
   }
 
   function addCard(title, badge, kind, rows) {
@@ -215,7 +189,7 @@ require([
 
   async function runCheck(point) {
     clearResults();
-    setStatus("Checking FAA airspace data…", false);
+    setStatus("Checking FAA airspace data…", "");
     let danger = false;
     let caution = false;
     for (const cfg of LAYERS) {
@@ -231,26 +205,12 @@ require([
       }
     }
     if (danger) {
-      setVerdict(
-        "bad",
-        "Do not fly",
-        "This location falls within FAA‑restricted airspace."
-      );
+      setStatus("Do not fly — FAA‑restricted airspace detected at this point.", "bad");
     } else if (caution) {
-      setVerdict(
-        "warn",
-        "Authorization likely",
-        "This location is within controlled airspace. LAANC authorization may be required."
-      );
+      setStatus("Authorization likely — controlled airspace detected (LAANC may be required).", "warn");
     } else {
-      setVerdict(
-        "good",
-        "Looks clear",
-        "No key FAA restrictions detected at this point. Always verify TFRs and local rules."
-      );
+      setStatus("Looks clear — no key FAA restrictions detected. Still verify TFRs and local rules.", "good");
     }
-    setStatus("Check complete.", true);
-  }
 
   /* ---------------- Events ---------------- */
   view.on("click", async e => {
@@ -270,7 +230,7 @@ require([
     const lat = parseFloat(latEl.value);
     const lng = parseFloat(lngEl.value);
     if (isNaN(lat) || isNaN(lng)) {
-      setStatus("Enter valid coordinates.", false);
+      setStatus("Enter valid coordinates.", "bad");
       return;
     }
     const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
@@ -285,13 +245,13 @@ require([
     clearResults();
     if (pin) view.graphics.remove(pin);
     pin = null;
-    setStatus("Click the map or enter coordinates to check.", true);
+    setStatus("Click the map or enter coordinates to check.", "muted");
   });
 
   // Handle geolocation on "Use my location" button
   btnLocate.addEventListener("click", () => {
     if (!navigator.geolocation) {
-      setStatus("Geolocation not supported in this browser.", false);
+      setStatus("Geolocation not supported in this browser.", "bad");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -306,7 +266,7 @@ require([
         await runCheck(p);
       },
       () => {
-        setStatus("Unable to access your location.", false);
+        setStatus("Unable to access your location.", "bad");
       }
     );
   });

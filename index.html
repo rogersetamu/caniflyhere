@@ -45,13 +45,7 @@
         </div>
       </div>
     </div>
-    <nav class="topnav">
-      <a href="index.html">Home</a>
-      <a href="about.html">About</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-    </nav>
-  </header>
+</header>
 
   <main class="layout">
     <section class="panel">
@@ -76,25 +70,15 @@
       </div>
       <button id="btnGo" class="btn primary wide">Check location</button>
       <!-- Hide ad slot by default; it will be displayed automatically when ads load -->
-      <div class="adSlot" aria-label="Advertisement" hidden>
+      <div class="adSlot" aria-label="Advertisement">
         <div class="adLabel">Advertisement</div>
-        <div class="adBox">Ad will appear here after approval</div>
+        <div class="adBox">Ad space</div>
       </div>
       <!-- Live region for status updates for screen readers -->
       <div id="status" class="status muted" aria-live="polite">
         Tip: click anywhere on the map to run a check.
       </div>
-      <div id="verdict" class="verdict hidden">
-        <div class="verdictTop">
-          <div id="verdictPill" class="pill">OK</div>
-          <div class="verdict-title">Looks clear</div>
-        </div>
-        <div class="verdict-message">
-          No key FAA restrictions detected at this point. Always verify TFRs
-          and local rules.
-        </div>
-      </div>
-      <div id="results" class="results"></div>
+<div id="results" class="results"></div>
       <div class="disclaimer">
         <strong>Important:</strong> This is a planning tool. It does not
         grant flight approval. TFRs can change fast. Always verify using

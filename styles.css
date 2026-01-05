@@ -310,14 +310,31 @@ a:hover{ text-decoration: underline; }
   #viewDiv{ min-height: 520px; }
 }
 
-/* Single column layout for simple pages (about, privacy, terms) */
+/* Layout for simple pages (about, privacy, terms)
+   Desktop: content + ad sidebar
+   Mobile: stacked
+*/
 body.simple .layout{
-  display: block;
-  max-width: 650px;
-  margin: 40px auto;
+  max-width: 1040px;
+  margin: 18px auto 40px;
   padding: 14px;
   height: auto;
+  grid-template-columns: 1fr;
 }
-body.simple .panel{
-  margin: 0 auto;
+body.simple .panel{ margin: 0; }
+body.simple .sidePanel{ padding: 14px; }
+@media (min-width: 980px){
+  body.simple .layout{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+  body.simple .sidePanel{
+    position: sticky;
+    top: 86px;
+    height: fit-content;
+  }
+}
+@media (max-width: 979px){
+  body.simple .sidePanel{ margin-top: 14px; }
 }
