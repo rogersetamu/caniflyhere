@@ -2,69 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>CanIFlyHere.us — Drone Airspace Check</title>
-  <meta name="description" content="Quick FAA drone airspace lookup. Check LAANC grids and flight restrictions." />
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#0b0f14">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>CanIFlyHere.us | Drone Airspace Check</title>
+  <meta name="description" content="Check a location for FAA drone airspace awareness. LAANC, restrictions, and planning info using FAA data." />
+  <link rel="canonical" href="https://caniflyhere.us/" />
 
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
   <script src="https://js.arcgis.com/4.30/"></script>
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370" crossorigin="anonymous"></script>
+  <!-- Google AdSense -->
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370"
+    crossorigin="anonymous"></script>
 </head>
 
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="logo">✈️</div>
-      <div class="brand-text">
+      <div>
         <div class="title">CanIFlyHere.us</div>
-        <div class="subtitle">FAA Airspace Planning Tool</div>
+        <div class="subtitle">Drone airspace awareness using FAA data (planning tool)</div>
       </div>
     </div>
   </header>
 
   <main class="layout">
-    <aside class="sidebar">
-      <section class="panel">
-        <h2>Location Check</h2>
-        
-        <div class="controls-stack">
-          <button id="btnLocate" class="btn primary">GPS Locate</button>
-          
-          <div class="input-row">
-            <div class="inputGroup">
-              <label>Latitude</label>
-              <input id="lat" type="number" step="any" inputmode="decimal" placeholder="30.6280" />
-            </div>
-            <div class="inputGroup">
-              <label>Longitude</label>
-              <input id="lng" type="number" step="any" inputmode="decimal" placeholder="-96.3344" />
-            </div>
-          </div>
-          
-          <button id="btnGo" class="btn action">Run Airspace Query</button>
-        </div>
+    <section class="panel">
+      <h2>Check a location</h2>
 
-        <div id="status" class="status-indicator">Ready. Click map or use GPS.</div>
+      <button id="btnLocate" class="btn primary">Use my location</button>
 
-        <div id="results" class="results-container"></div>
-        
-        <div class="ad-container">
-          <div class="adLabel">Sponsored Content</div>
-          <div class="adBox">Ad Space</div>
-        </div>
-      </section>
-    </aside>
+      <div class="inputGroup">
+        <label for="lat">Latitude</label>
+        <input id="lat" placeholder="30.6280" />
+      </div>
 
-    <section class="map-viewport">
+      <div class="inputGroup">
+        <label for="lng">Longitude</label>
+        <input id="lng" placeholder="-96.3344" />
+      </div>
+
+      <button id="btnGo" class="btn primary wide">Check location</button>
+
+      <!-- Ad placeholder -->
+      <div class="adSlot">
+        <div class="adLabel">Advertisement</div>
+        <div class="adBox">Ad will appear here after approval</div>
+      </div>
+
+      <div id="status" class="status muted">
+        Click the map or enter coordinates.
+      </div>
+
+      <div id="results"></div>
+    </section>
+
+    <section class="mapWrap">
       <div id="viewDiv"></div>
-      <div class="map-overlay-hint">Tap map to set pin</div>
     </section>
   </main>
+
+  <footer class="footer">
+    <a href="about.html">About</a> |
+    <a href="privacy.html">Privacy</a> |
+    <a href="terms.html">Terms</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
+
 
   <footer class="footer">
     <div class="footer-links">
@@ -78,4 +89,5 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
