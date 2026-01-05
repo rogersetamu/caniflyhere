@@ -1,33 +1,83 @@
 <!doctype html>
+<!--
+  Privacy policy for CanIFlyHere.us
+  Outlines how location and cookie data are handled. Uses the
+  "simple" body class to centre content.
+-->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Privacy Policy | CanIFlyHere.us</title>
+  <meta
+    name="description"
+    content="Find out how CanIFlyHere.us handles your location data and cookies. We respect your privacy and do not store personally identifiable information."
+  />
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Google AdSense -->
-  <script async
+  <!-- Google AdSense (included for compliance, ads are hidden until approved) -->
+  <script
+    async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370"
-    crossorigin="anonymous"></script>
+    crossorigin="anonymous"
+  ></script>
 </head>
-
-<body>
+<body class="simple">
   <header class="topbar">
-    <div class="title">CanIFlyHere.us</div>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">✈️</div>
+      <div class="brandText">
+        <div class="title">CanIFlyHere.us</div>
+        <div class="subtitle">
+          Drone airspace awareness using FAA data (planning tool)
+        </div>
+      </div>
+    </div>
+    <nav class="topnav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
   </header>
-
   <main class="layout">
     <section class="panel">
       <h2>Privacy Policy</h2>
       <p>
-        This site does not store personal information.
-        Location data is used only in your browser session.
+        <strong>CanIFlyHere.us</strong> does not store or transmit any
+        personally identifiable information. When you enter coordinates or
+        click “Use my location,” your location data is processed entirely
+        in your browser and is used only to display a map and query FAA
+        geospatial layers. We do not log coordinates or associate them with
+        any user.
       </p>
       <p>
-        Advertising partners such as Google may use cookies to serve ads.
+        Advertising partners (for example, Google) may use cookies or similar
+        technologies to deliver ads if and when advertising is enabled on
+        the site. You can manage ad personalization through your Google
+        account settings or opt out using your browser’s privacy controls.
+      </p>
+      <p>
+        By continuing to use this site you consent to the limited use of
+        cookies described above. If you have questions about how your data
+        is handled, please open an issue on the
+        <a href="https://github.com/rogersetamu/caniflyhere" target="_blank" rel="noopener noreferrer">project’s GitHub repository</a>.
       </p>
     </section>
   </main>
+  <footer class="footer">
+    <div class="footerLinks">
+      <a href="index.html">Home</a>
+      <span>•</span>
+      <a href="about.html">About</a>
+      <span>•</span>
+      <a href="privacy.html">Privacy</a>
+      <span>•</span>
+      <a href="terms.html">Terms</a>
+    </div>
+    <div class="footerNote">
+      Uses FAA ArcGIS open data layers where available. Not an FAA product.
+    </div>
+    <div class="footerCopy">© 2026 CanIFlyHere.us</div>
+  </footer>
 </body>
 </html>
