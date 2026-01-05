@@ -1,3 +1,11 @@
+/*
+  Core styling for CanIFlyHere.us
+  This stylesheet defines a dark‑themed UI with soft radii and subtle
+  shadows. It includes additional rules for single‑column pages and
+  key‑value result cards, as well as improved verdict and status
+  formatting.
+*/
+
 :root{
   --bg:#0b0f14;
   --panel:#101825;
@@ -39,7 +47,6 @@ a:hover{ text-decoration: underline; }
   top: 0;
   z-index: 10;
 }
-
 .brand{ display:flex; align-items:center; gap:12px; min-width: 0; }
 .logo{
   width:36px; height:36px;
@@ -58,7 +65,6 @@ a:hover{ text-decoration: underline; }
   text-overflow: ellipsis;
   max-width: 520px;
 }
-
 .topnav{ display:flex; gap:12px; }
 .topnav a{
   color: var(--muted);
@@ -73,7 +79,6 @@ a:hover{ text-decoration: underline; }
   padding: 14px;
   height: calc(100vh - 64px);
 }
-
 .panel{
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid var(--border);
@@ -82,7 +87,6 @@ a:hover{ text-decoration: underline; }
   box-shadow: var(--shadow);
   overflow: auto;
 }
-
 .panel h2{ margin: 4px 0 8px; font-size: 18px; }
 .helper{
   margin: 0 0 12px;
@@ -92,7 +96,6 @@ a:hover{ text-decoration: underline; }
 }
 
 .btnRow{ display:flex; gap:10px; margin-bottom: 12px; }
-
 .btn{
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.03);
@@ -173,7 +176,6 @@ a:hover{ text-decoration: underline; }
   background: rgba(0,0,0,0.18);
 }
 .hidden{ display:none !important; }
-
 .verdictTop{ display:flex; align-items:center; gap:10px; }
 .pill{
   padding: 6px 10px;
@@ -185,28 +187,25 @@ a:hover{ text-decoration: underline; }
 .pill.good{ background: rgba(53,208,127,0.16); border-color: rgba(53,208,127,0.35); }
 .pill.warn{ background: rgba(255,204,102,0.14); border-color: rgba(255,204,102,0.35); }
 .pill.bad{  background: rgba(255,90,107,0.14); border-color: rgba(255,90,107,0.35); }
-
-.verdictTitle{ font-weight: 800; }
-.verdictMsg{ margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.verdict-title{
+  font-weight: 800;
+  font-size: 14px;
+}
+.verdict-message{
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
 
 .results{ margin-top: 12px; display:flex; flex-direction:column; gap: 10px; }
-
 .card{
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 12px;
   background: rgba(255,255,255,0.03);
 }
-.cardHead{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.cardTitle{ font-weight: 800; font-size: 13px; }
-.cardSmall{ color: var(--muted); font-size: 12px; margin-top: 2px; }
-
+.cardTitle{ font-weight: 800; font-size: 13px; margin-bottom: 4px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
 .badge{
   font-size: 11px;
   font-weight: 800;
@@ -218,6 +217,23 @@ a:hover{ text-decoration: underline; }
 .badge.good{ background: rgba(53,208,127,0.14); border-color: rgba(53,208,127,0.30); }
 .badge.warn{ background: rgba(255,204,102,0.12); border-color: rgba(255,204,102,0.30); }
 .badge.bad{  background: rgba(255,90,107,0.12); border-color: rgba(255,90,107,0.30); }
+
+.kv{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  row-gap: 4px;
+  margin-top: 8px;
+}
+.kv .k{
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 12px;
+}
+.kv > div{
+  font-size: 12px;
+  color: var(--text);
+}
 
 .details{
   margin-top: 8px;
@@ -258,7 +274,6 @@ a:hover{ text-decoration: underline; }
   background: #0c121b;
 }
 #viewDiv{ width: 100%; height: 100%; min-height: 520px; }
-
 .mapTip{
   position: absolute;
   left: 12px;
@@ -285,6 +300,7 @@ a:hover{ text-decoration: underline; }
 .footerLinks span{ color: rgba(255,255,255,0.25); }
 .footerCopy{ color: rgba(255,255,255,0.55); }
 
+/* Responsive layout adjustments */
 @media (max-width: 980px){
   .layout{
     grid-template-columns: 1fr;
@@ -292,4 +308,16 @@ a:hover{ text-decoration: underline; }
   }
   .subtitle{ max-width: 280px; }
   #viewDiv{ min-height: 520px; }
+}
+
+/* Single column layout for simple pages (about, privacy, terms) */
+body.simple .layout{
+  display: block;
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 14px;
+  height: auto;
+}
+body.simple .panel{
+  margin: 0 auto;
 }
