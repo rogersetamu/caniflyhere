@@ -1,8 +1,13 @@
-/* CanIFlyHere.us MVP - IMPORTANT LAYERS ONLY + Public-ready polish
-   Notes:
-   - OK when no major layers hit
-   - CAUTION only on UAS Facility Map grid hit (LAANC)
-   - NO GO on NSUFR (and optional Prohibited) hits
+/*
+  CanIFlyHere.us - Pilot friendly FAA layer check (planning tool)
+
+  Verdict logic:
+  - DO NOT FLY: National Security UAS Flight Restrictions (full or part time) OR Prohibited Areas
+  - LAANC LIKELY: UAS Facility Map grid hit (shows ceiling)
+  - OK: none of the above detected
+
+  Notes:
+  - This is not a TFR feed. TFRs change fast. Always verify official FAA sources.
 */
 
 require([
@@ -11,301 +16,141 @@ require([
   "esri/layers/FeatureLayer",
   "esri/Graphic",
   "esri/geometry/Point",
-  "esri/geometry/geometryEngine"
+  "esri/geometry/geometryEngine",
+  "esri/renderers/SimpleRenderer",
+  "esri/symbols/SimpleFillSymbol",
+  "esri/symbols/SimpleLineSymbol"
 ], function (
   Map,
   MapView,
   FeatureLayer,
   Graphic,
   Point,
-  geometryEngine
+  geometryEngine,
+  SimpleRenderer,
+  SimpleFillSymbol,
+  SimpleLineSymbol
 ) {
   const statusEl = document.getElementById("status");
   const resultsEl = document.getElementById("results");
+  const verdictWrap = document.getElementById("verdict");
+  const verdictPill = document.getElementById("verdictPill");
+  const verdictTitle = document.getElementById("verdictTitle");
+  const verdictMsg = document.getElementById("verdictMsg");
+
   const latEl = document.getElementById("lat");
   const lngEl = document.getElementById("lng");
   const btnGo = document.getElementById("btnGo");
   const btnLocate = document.getElementById("btnLocate");
   const btnClear = document.getElementById("btnClear");
 
-  let isChecking = false;
-
-  function setStatus(msg, muted = true) {
-    if (!statusEl) return;
+  function setStatus(msg, muted) {
     statusEl.textContent = msg;
     statusEl.className = muted ? "status muted" : "status";
   }
 
   function clearResults() {
-    if (!resultsEl) return;
     resultsEl.innerHTML = "";
   }
 
-  function setBusy(busy) {
-    isChecking = !!busy;
-    if (btnGo) btnGo.disabled = busy;
-    if (btnLocate) btnLocate.disabled = busy;
-    if (btnClear) btnClear.disabled = busy;
-    if (latEl) latEl.disabled = busy;
-    if (lngEl) lngEl.disabled = busy;
+  function setVerdict(kind, title, msg) {
+    verdictWrap.classList.remove("hidden");
+
+    verdictPill.className = "pill " + (kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good");
+    verdictPill.textContent = kind === "bad" ? "DO NOT FLY" : kind === "warn" ? "LAANC LIKELY" : "OK";
+
+    verdictTitle.textContent = title;
+    verdictMsg.textContent = msg;
   }
 
-  function addCard(title, badgeText, badgeKind, rows, targetEl) {
-    const container = targetEl || resultsEl;
-    if (!container) return;
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const head = document.createElement("div");
-    head.className = "cardTitle";
-
-    const t = document.createElement("div");
-    t.textContent = title;
-
-    const b = document.createElement("div");
-    b.className = `badge ${badgeKind}`;
-    b.textContent = badgeText;
-
-    head.appendChild(t);
-    head.appendChild(b);
-
-    const kv = document.createElement("div");
-    kv.className = "kv";
-
-    rows.forEach(([k, v]) => {
-      const kk = document.createElement("div");
-      kk.className = "k";
-      kk.textContent = k;
-
-      const vv = document.createElement("div");
-      vv.textContent = v;
-
-      kv.appendChild(kk);
-      kv.appendChild(vv);
+  function makeCleanPolyRenderer(kind) {
+    const outline = new SimpleLineSymbol({
+      style: "solid",
+      color: [0, 0, 0, 30],
+      width: 0.6
     });
 
-    card.appendChild(head);
-    card.appendChild(kv);
-    container.appendChild(card);
-  }
-
-  function pickFields(attrs, hints) {
-    const rows = [];
-    if (!attrs) return rows;
-
-    hints.forEach(h => {
-      if (attrs[h] !== undefined && attrs[h] !== null && String(attrs[h]).trim() !== "") {
-        rows.push([h, String(attrs[h])]);
-      }
+    const fill = new SimpleFillSymbol({
+      style: "solid",
+      color:
+        kind === "bad" ? [255, 90, 107, 55] :
+        kind === "warn" ? [255, 204, 102, 40] :
+        [53, 208, 127, 28],
+      outline
     });
 
-    if (attrs.OBJECTID !== undefined) rows.push(["OBJECTID", String(attrs.OBJECTID)]);
-
-    if (rows.length === 0) {
-      const keys = Object.keys(attrs).slice(0, 6);
-      keys.forEach(k => rows.push([k, String(attrs[k])]));
-    }
-    return rows;
+    return new SimpleRenderer({ symbol: fill });
   }
 
-  function hasAny(arr) {
-    return Array.isArray(arr) && arr.length > 0;
-  }
-
-  function pickFirst(attrs, keys) {
-    for (const k of keys) {
-      if (attrs && attrs[k] !== undefined && attrs[k] !== null && String(attrs[k]).trim() !== "") {
-        return String(attrs[k]);
-      }
-    }
-    return "";
-  }
-
-  function renderVerdict(kind, headline, bullets) {
-    clearResults();
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const head = document.createElement("div");
-    head.className = "cardTitle";
-
-    const t = document.createElement("div");
-    t.textContent = headline;
-
-    const b = document.createElement("div");
-    b.className = `badge ${kind}`;
-    b.textContent = kind === "good" ? "OK" : (kind === "warn" ? "CAUTION" : "NO GO");
-
-    head.appendChild(t);
-    head.appendChild(b);
-
-    const list = document.createElement("ul");
-    list.style.margin = "8px 0 0 18px";
-    list.style.color = "var(--muted)";
-    list.style.fontSize = "13px";
-    list.style.lineHeight = "1.35";
-
-    bullets.slice(0, 3).forEach(txt => {
-      const li = document.createElement("li");
-      li.textContent = txt;
-      list.appendChild(li);
-    });
-
-    const links = document.createElement("div");
-    links.style.marginTop = "10px";
-    links.style.display = "flex";
-    links.style.flexWrap = "wrap";
-    links.style.gap = "10px";
-    links.style.fontSize = "13px";
-
-    function mkLink(text, href) {
-      const a = document.createElement("a");
-      a.textContent = text;
-      a.href = href;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.style.color = "var(--accent)";
-      a.style.textDecoration = "none";
-      return a;
-    }
-
-    links.appendChild(mkLink("FAA UAS", "https://www.faa.gov/uas"));
-    links.appendChild(mkLink("Check TFRs", "https://tfr.faa.gov"));
-    links.appendChild(mkLink("B4UFLY", "https://www.faa.gov/uas/getting_started/b4ufly"));
-
-    card.appendChild(head);
-    card.appendChild(list);
-    card.appendChild(links);
-
-    const toggleWrap = document.createElement("div");
-    toggleWrap.style.marginTop = "10px";
-
-    const btn = document.createElement("button");
-    btn.className = "btn";
-    btn.type = "button";
-    btn.textContent = "Show details";
-
-    const detailsDiv = document.createElement("div");
-    detailsDiv.style.display = "none";
-    detailsDiv.style.marginTop = "10px";
-
-    btn.addEventListener("click", () => {
-      const open = detailsDiv.style.display !== "none";
-      detailsDiv.style.display = open ? "none" : "block";
-      btn.textContent = open ? "Show details" : "Hide details";
-    });
-
-    toggleWrap.appendChild(btn);
-    toggleWrap.appendChild(detailsDiv);
-
-    card.appendChild(toggleWrap);
-    resultsEl.appendChild(card);
-
-    return detailsDiv;
-  }
-
-  function parseLatLng() {
-    const lat = Number(String(latEl.value || "").trim());
-    const lng = Number(String(lngEl.value || "").trim());
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-    return { lat, lng };
-  }
-
-  function safeBuffer(point, meters) {
-    try {
-      const gb = geometryEngine.geodesicBuffer(point, meters, "meters");
-      return gb || point;
-    } catch (e) {
-      return point;
-    }
-  }
-
-  async function queryLayerAtPoint(layer, point) {
-    const buffered = safeBuffer(point, 250);
-
-    const q = layer.createQuery();
-    q.geometry = buffered;
-    q.spatialRelationship = "intersects";
-    q.returnGeometry = false;
-    q.outFields = ["*"];
-    q.num = 5;
-
-    const res = await layer.queryFeatures(q);
-    return res.features || [];
-  }
-
+  // IMPORTANT LAYERS ONLY
   const LAYERS = [
     {
       key: "uasfm",
-      title: "UAS Facility Map (LAANC grid)",
+      title: "LAANC grid (UAS Facility Map)",
       url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0",
       kind: "warn",
       visible: true,
-      opacity: 0.55,
-      badgeWhenHit: "LAANC grid present",
-      fieldsHint: ["MAX_ALT", "MAX_ALTITUDE", "ALTITUDE", "GRID_MAX_ALT", "FACILITY", "AIRSPACE"]
+      minScale: 2000000,
+      badgeHit: "LAANC likely",
+      badgeMiss: "No LAANC grid here"
     },
     {
-      key: "nsufr_full",
-      title: "National Security UAS Flight Restrictions (Full-Time)",
-      url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/DoD_Mar_13/FeatureServer/0",
-      kind: "bad",
-      visible: true,
-      opacity: 0.50,
-      badgeWhenHit: "Restriction",
-      fieldsHint: ["NAME", "AGENCY", "NOTAM", "LOWER_VAL", "UPPER_VAL", "REMARKS"]
-    },
-    {
-      key: "nsufr_part",
-      title: "National Security UAS Flight Restrictions (Part-Time)",
+      key: "ns_part",
+      title: "National security UAS restrictions (part time)",
       url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Part_Time_National_Security_UAS_Flight_Restrictions/FeatureServer/0",
       kind: "bad",
       visible: true,
-      opacity: 0.50,
-      badgeWhenHit: "Restriction",
-      fieldsHint: ["NAME", "AGENCY", "NOTAM", "START_TIME", "END_TIME", "REMARKS"]
+      minScale: 3000000,
+      badgeHit: "Restriction",
+      badgeMiss: "No restriction here"
+    },
+    {
+      key: "ns_full",
+      title: "National security UAS restrictions (full time)",
+      url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/DoD_Mar_13/FeatureServer/0",
+      kind: "bad",
+      visible: true,
+      minScale: 3000000,
+      badgeHit: "Restriction",
+      badgeMiss: "No restriction here"
     },
     {
       key: "prohibited",
-      title: "Prohibited Areas",
+      title: "Prohibited areas",
       url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Prohibited_Areas/FeatureServer/0",
       kind: "bad",
-      visible: false,
-      opacity: 0.60,
-      badgeWhenHit: "Prohibited area",
-      fieldsHint: ["NAME", "TYPE_CODE", "IDENT", "LOWER_VAL", "UPPER_VAL", "REMARKS"]
+      visible: true,
+      minScale: 3000000,
+      badgeHit: "Prohibited",
+      badgeMiss: "None detected"
     }
   ];
 
-  const featureLayers = {};
-  const esriLayers = [];
+  const map = new Map({
+    basemap: "streets-navigation-vector"
+  });
 
+  const featureLayers = {};
   LAYERS.forEach(cfg => {
     const layer = new FeatureLayer({
       url: cfg.url,
       title: cfg.title,
-      opacity: typeof cfg.opacity === "number" ? cfg.opacity : 0.6,
-      visible: !!cfg.visible,
-      outFields: ["*"]
+      outFields: ["*"],
+      visible: cfg.visible,
+      minScale: cfg.minScale
     });
 
+    layer.renderer = makeCleanPolyRenderer(cfg.kind);
     featureLayers[cfg.key] = layer;
-    esriLayers.push(layer);
-  });
-
-  const map = new Map({
-    basemap: "streets-navigation-vector",
-    layers: esriLayers
+    map.add(layer);
   });
 
   const view = new MapView({
     container: "viewDiv",
-    map,
+    map: map,
     center: [-96.3344, 30.6280],
-    zoom: 10
+    zoom: 9,
+    constraints: { minZoom: 3 }
   });
 
   let pinGraphic = null;
@@ -319,101 +164,206 @@ require([
         type: "simple-marker",
         style: "circle",
         size: 10,
-        color: "#2563eb",
-        outline: { color: "#ffffff", width: 1.5 }
+        color: [74, 163, 255, 190],
+        outline: { color: [255, 255, 255, 230], width: 2 }
       }
     });
 
     view.graphics.add(pinGraphic);
   }
 
-  async function runCheck(point) {
-    if (isChecking) return;
-    setBusy(true);
+  function parseLatLng() {
+    const lat = Number(String(latEl.value || "").trim());
+    const lng = Number(String(lngEl.value || "").trim());
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    return { lat, lng };
+  }
 
-    clearResults();
-    setStatus("Checking FAA layers at this point…", false);
-
+  function safeBuffer(geom, meters) {
     try {
-      const results = await Promise.all(
-        LAYERS.map(async cfg => {
-          const layer = featureLayers[cfg.key];
-          try {
-            const feats = await queryLayerAtPoint(layer, point);
-            return { cfg, feats, error: null };
-          } catch (err) {
-            return { cfg, feats: [], error: err };
-          }
-        })
-      );
-
-      const byKey = {};
-      results.forEach(r => { byKey[r.cfg.key] = r; });
-
-      const nsufrHit = hasAny(byKey.nsufr_part?.feats) || hasAny(byKey.nsufr_full?.feats);
-      const prohibitedHit = hasAny(byKey.prohibited?.feats);
-      const uasfmHit = hasAny(byKey.uasfm?.feats);
-
-      let verdictKind = "good";
-      let headline = "OK to fly here (no major FAA restrictions found)";
-      const bullets = [];
-
-      if (nsufrHit || prohibitedHit) {
-        verdictKind = "bad";
-        headline = "Do not fly here (restriction present)";
-        if (nsufrHit) bullets.push("National Security UAS Flight Restriction detected.");
-        if (prohibitedHit) bullets.push("Prohibited area detected.");
-        bullets.push("Verify official FAA restrictions and do not fly without proper authorization.");
-      } else if (uasfmHit) {
-        verdictKind = "warn";
-        headline = "Caution: LAANC likely required (controlled grid area)";
-        const attrs = byKey.uasfm.feats[0]?.attributes;
-        const maxAlt = pickFirst(attrs, ["CEILING", "MaxAlt", "MAX_ALT", "MAX_ALTITUDE", "ALTITUDE", "GRID_MAX_ALT"]);
-        bullets.push("This point falls inside a UAS Facility Map (LAANC) grid.");
-        bullets.push(maxAlt ? `Max altitude shown for this grid: ${maxAlt} ft.` : "Check the grid altitude ceiling before flight.");
-        bullets.push("Request LAANC authorization if required for your operation.");
-      } else {
-        bullets.push("No intersecting NSUFR or LAANC grid was detected here.");
-        bullets.push("Still check for active TFRs, NOTAMs, local rules, and safe operations.");
-      }
-
-      const detailsDiv = renderVerdict(verdictKind, headline, bullets);
-      setStatus("Done.", false);
-
-      const showDetails = results.some(r => (r.error || (r.feats && r.feats.length > 0)));
-      const toggleBtn = resultsEl.querySelector(".btn");
-      if (toggleBtn && !showDetails) {
-        toggleBtn.style.display = "none";
-      }
-
-      results.forEach(r => {
-        const cfg = r.cfg;
-
-        if (r.error) {
-          addCard(cfg.title, "Query failed", "warn", [
-            ["Note", "This layer could not be queried right now."],
-            ["Details", r.error?.message ? String(r.error.message) : String(r.error)]
-          ], detailsDiv);
-          return;
-        }
-
-        if (!r.feats || r.feats.length === 0) return;
-
-        const attrs = r.feats[0].attributes;
-        const rows = pickFields(attrs, cfg.fieldsHint || []);
-        addCard(cfg.title, cfg.badgeWhenHit || "Hit", cfg.kind || "warn", rows, detailsDiv);
-      });
-
-    } catch (e) {
-      setStatus("Something went wrong running the check.", false);
-      addCard("System", "Error", "bad", [
-        ["Details", e?.message ? String(e.message) : String(e)]
-      ]);
-    } finally {
-      setBusy(false);
+      const gb = geometryEngine.geodesicBuffer(geom, meters, "meters");
+      return gb || geom;
+    } catch {
+      return geom;
     }
   }
 
+  function toCeilingFeet(attrs) {
+    if (!attrs) return null;
+    const candidates = [
+      "CEILING", "Ceiling", "GRID_MAX_ALT", "MAX_ALT", "MAX_ALTITUDE",
+      "ALTITUDE", "GridCeiling", "GRIDCEILING", "MaxAlt", "max_alt"
+    ];
+    for (const k of candidates) {
+      const v = attrs[k];
+      if (v === undefined || v === null) continue;
+      const n = Number(v);
+      if (Number.isFinite(n)) return n;
+      const s = String(v).trim();
+      const parsed = Number(s);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return null;
+  }
+
+  function addCard(title, badgeText, badgeKind, shortLine, bullets) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const head = document.createElement("div");
+    head.className = "cardHead";
+
+    const left = document.createElement("div");
+    const t = document.createElement("div");
+    t.className = "cardTitle";
+    t.textContent = title;
+
+    const s = document.createElement("div");
+    s.className = "cardSmall";
+    s.textContent = shortLine;
+
+    left.appendChild(t);
+    left.appendChild(s);
+
+    const badge = document.createElement("div");
+    badge.className = "badge " + badgeKind;
+    badge.textContent = badgeText;
+
+    head.appendChild(left);
+    head.appendChild(badge);
+    card.appendChild(head);
+
+    if (bullets && bullets.length) {
+      const details = document.createElement("details");
+      details.className = "details";
+
+      const summary = document.createElement("summary");
+      summary.textContent = "Show details";
+      details.appendChild(summary);
+
+      const list = document.createElement("ul");
+      bullets.slice(0, 6).forEach(txt => {
+        const li = document.createElement("li");
+        li.textContent = txt;
+        list.appendChild(li);
+      });
+      details.appendChild(list);
+      card.appendChild(details);
+    }
+
+    resultsEl.appendChild(card);
+  }
+
+  async function queryLayerAtPoint(layer, point) {
+    const buffered = safeBuffer(point, 250);
+    const q = layer.createQuery();
+    q.geometry = buffered;
+    q.spatialRelationship = "intersects";
+    q.returnGeometry = false;
+    q.outFields = ["*"];
+    q.num = 5;
+    const res = await layer.queryFeatures(q);
+    return res.features || [];
+  }
+
+  async function runCheck(point) {
+    clearResults();
+    setStatus("Checking FAA layers…", false);
+
+    const results = await Promise.all(
+      LAYERS.map(async cfg => {
+        const layer = featureLayers[cfg.key];
+        try {
+          const feats = await queryLayerAtPoint(layer, point);
+          return { cfg, feats, error: null };
+        } catch (err) {
+          return { cfg, feats: [], error: err };
+        }
+      })
+    );
+
+    const hits = {};
+    results.forEach(r => {
+      hits[r.cfg.key] = (r.feats && r.feats.length) ? r.feats : [];
+    });
+
+    const hasNS = (hits.ns_full && hits.ns_full.length) || (hits.ns_part && hits.ns_part.length);
+    const hasProhibited = (hits.prohibited && hits.prohibited.length);
+    const hasUASFM = (hits.uasfm && hits.uasfm.length);
+
+    if (hasNS || hasProhibited) {
+      setVerdict(
+        "bad",
+        "Do not fly here",
+        "This point intersects an FAA restriction or prohibited area. Do not fly unless you have explicit authorization."
+      );
+    } else if (hasUASFM) {
+      const a = hits.uasfm[0].attributes || {};
+      const ceiling = toCeilingFeet(a);
+      const msg = ceiling !== null
+        ? "This point is inside a LAANC grid. The grid ceiling here is about " + ceiling + " ft AGL. Authorization may be required."
+        : "This point is inside a LAANC grid. Authorization may be required.";
+      setVerdict("warn", "LAANC likely required", msg);
+    } else {
+      setVerdict(
+        "good",
+        "Looks clear",
+        "This tool did not detect key FAA restriction layers at this point. Still verify TFRs and local rules before flying."
+      );
+    }
+
+    // Cards (simple)
+    for (const r of results) {
+      const cfg = r.cfg;
+
+      if (r.error) {
+        addCard(
+          cfg.title,
+          "Unavailable",
+          "warn",
+          "This layer could not be checked right now.",
+          ["Try again later or verify using official FAA tools."]
+        );
+        continue;
+      }
+
+      const feats = r.feats || [];
+      if (!feats.length) {
+        addCard(cfg.title, cfg.badgeMiss, "good", "No match detected near this point.", []);
+        continue;
+      }
+
+      // Build human bullets per layer
+      const attrs = feats[0].attributes || {};
+      const bullets = [];
+
+      if (cfg.key === "uasfm") {
+        const ceiling = toCeilingFeet(attrs);
+        if (ceiling !== null) bullets.push("LAANC grid ceiling: about " + ceiling + " ft AGL");
+        bullets.push("If you are flying Part 107 in controlled airspace, LAANC authorization is commonly required.");
+      }
+
+      if (cfg.key === "ns_full" || cfg.key === "ns_part") {
+        if (attrs.NAME) bullets.push("Name: " + String(attrs.NAME));
+        if (attrs.AGENCY) bullets.push("Agency: " + String(attrs.AGENCY));
+        if (attrs.REMARKS) bullets.push("Notes: " + String(attrs.REMARKS));
+        bullets.push("Treat this as a hard stop unless you have explicit approval.");
+      }
+
+      if (cfg.key === "prohibited") {
+        if (attrs.NAME) bullets.push("Area: " + String(attrs.NAME));
+        if (attrs.REMARKS) bullets.push("Notes: " + String(attrs.REMARKS));
+        bullets.push("Prohibited areas are not optional. Do not fly here.");
+      }
+
+      addCard(cfg.title, cfg.badgeHit, cfg.kind, "Match found near this point.", bullets);
+    }
+
+    setStatus("Done.", true);
+  }
+
+  // Map click
   view.on("click", async (evt) => {
     const p = evt.mapPoint;
     if (!p) return;
@@ -424,84 +374,80 @@ require([
       spatialReference: { wkid: 4326 }
     });
 
-    if (latEl) latEl.value = point.latitude.toFixed(6);
-    if (lngEl) lngEl.value = point.longitude.toFixed(6);
+    latEl.value = point.latitude.toFixed(6);
+    lngEl.value = point.longitude.toFixed(6);
 
     placePin(point);
 
     view.goTo(
       { center: [point.longitude, point.latitude], zoom: Math.max(view.zoom, 11) },
-      { duration: 300 }
-    ).catch(() => {});
+      { duration: 250 }
+    ).catch(function(){});
 
     await runCheck(point);
   });
 
-  if (btnGo) {
-    btnGo.addEventListener("click", async () => {
-      const ll = parseLatLng();
-      if (!ll) {
-        setStatus("Invalid coordinates. Example: 30.6280 and -96.3344", false);
-        return;
-      }
+  // Coordinate check
+  btnGo.addEventListener("click", async () => {
+    const ll = parseLatLng();
+    if (!ll) {
+      setStatus("Invalid coordinates. Example: 30.628000 and -96.334400", false);
+      return;
+    }
 
-      const point = new Point({
-        longitude: ll.lng,
-        latitude: ll.lat,
-        spatialReference: { wkid: 4326 }
-      });
-
-      placePin(point);
-      view.goTo({ center: [ll.lng, ll.lat], zoom: 11 }, { duration: 300 }).catch(() => {});
-      await runCheck(point);
+    const point = new Point({
+      longitude: ll.lng,
+      latitude: ll.lat,
+      spatialReference: { wkid: 4326 }
     });
-  }
 
-  if (btnLocate) {
-    btnLocate.addEventListener("click", async () => {
-      if (!navigator.geolocation) {
-        setStatus("Geolocation not available in this browser.", false);
-        return;
-      }
+    placePin(point);
+    view.goTo({ center: [ll.lng, ll.lat], zoom: 11 }, { duration: 250 }).catch(function(){});
+    await runCheck(point);
+  });
 
-      setStatus("Getting your location…", false);
+  // Locate
+  btnLocate.addEventListener("click", async () => {
+    if (!navigator.geolocation) {
+      setStatus("Geolocation not available in this browser.", false);
+      return;
+    }
 
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    setStatus("Getting your location…", false);
 
-          if (latEl) latEl.value = ll.lat.toFixed(6);
-          if (lngEl) lngEl.value = ll.lng.toFixed(6);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
 
-          const point = new Point({
-            longitude: ll.lng,
-            latitude: ll.lat,
-            spatialReference: { wkid: 4326 }
-          });
+        latEl.value = ll.lat.toFixed(6);
+        lngEl.value = ll.lng.toFixed(6);
 
-          placePin(point);
-          view.goTo({ center: [ll.lng, ll.lat], zoom: 11 }, { duration: 300 }).catch(() => {});
-          await runCheck(point);
-        },
-        () => setStatus("Location failed. You may have blocked permissions.", false),
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 }
-      );
-    });
-  }
+        const point = new Point({
+          longitude: ll.lng,
+          latitude: ll.lat,
+          spatialReference: { wkid: 4326 }
+        });
 
-  if (btnClear) {
-    btnClear.addEventListener("click", () => {
-      if (isChecking) return;
+        placePin(point);
+        view.goTo({ center: [ll.lng, ll.lat], zoom: 11 }, { duration: 250 }).catch(function(){});
+        await runCheck(point);
+      },
+      () => setStatus("Location failed. You may have blocked permissions.", false),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 }
+    );
+  });
 
-      if (latEl) latEl.value = "";
-      if (lngEl) lngEl.value = "";
-      clearResults();
-      setStatus("Pick a point (click map) or enter coordinates.", true);
+  // Clear
+  btnClear.addEventListener("click", () => {
+    latEl.value = "";
+    lngEl.value = "";
+    clearResults();
+    verdictWrap.classList.add("hidden");
+    setStatus("Tip: click anywhere on the map to run a check.", true);
 
-      if (pinGraphic) view.graphics.remove(pinGraphic);
-      pinGraphic = null;
-    });
-  }
+    if (pinGraphic) view.graphics.remove(pinGraphic);
+    pinGraphic = null;
+  });
 
-  setStatus("Ready. Click the map or enter coordinates to check.", true);
+  setStatus("Tip: click anywhere on the map to run a check.", true);
 });
