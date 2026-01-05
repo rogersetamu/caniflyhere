@@ -1,30 +1,83 @@
 <!doctype html>
+<!--
+  Terms of use for CanIFlyHere.us
+  Explains the limitations of the data and the user’s responsibilities.
+  Uses the "simple" body class to centre content.
+-->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Terms of Use | CanIFlyHere.us</title>
+  <meta
+    name="description"
+    content="Understand the limitations of CanIFlyHere.us and your responsibilities as a drone operator. This tool is for planning only and does not replace FAA authorization."
+  />
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Google AdSense -->
-  <script async
+  <!-- Google AdSense (included for compliance, ads are hidden until approved) -->
+  <script
+    async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370"
-    crossorigin="anonymous"></script>
+    crossorigin="anonymous"
+  ></script>
 </head>
-
-<body>
+<body class="simple">
   <header class="topbar">
-    <div class="title">CanIFlyHere.us</div>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">✈️</div>
+      <div class="brandText">
+        <div class="title">CanIFlyHere.us</div>
+        <div class="subtitle">
+          Drone airspace awareness using FAA data (planning tool)
+        </div>
+      </div>
+    </div>
+    <nav class="topnav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
   </header>
-
   <main class="layout">
     <section class="panel">
       <h2>Terms of Use</h2>
       <p>
-        This site is provided for informational purposes only.
-        It does not replace FAA authorization or compliance requirements.
+        This website is provided solely as an informational planning tool for
+        drone operators. It overlays FAA UAS Facility Map grids and national
+        security airspace restrictions to help you identify areas that may
+        require authorization or are off‑limits. It does not display all
+        possible airspace restrictions, including, but not limited to,
+        temporary flight restrictions, stadium/event restrictions, or
+        local ordinances.
+      </p>
+      <p>
+        Your use of this site does not relieve you of any responsibility to
+        obtain proper authorization from the FAA or local authorities. By
+        using CanIFlyHere.us, you acknowledge that the information
+        provided may contain inaccuracies or omissions and agree not to
+        rely on it as your sole source for flight decisions.
+      </p>
+      <p>
+        Under no circumstances shall the site operators be liable for any
+        direct or indirect losses arising from reliance on this information.
       </p>
     </section>
   </main>
+  <footer class="footer">
+    <div class="footerLinks">
+      <a href="index.html">Home</a>
+      <span>•</span>
+      <a href="about.html">About</a>
+      <span>•</span>
+      <a href="privacy.html">Privacy</a>
+      <span>•</span>
+      <a href="terms.html">Terms</a>
+    </div>
+    <div class="footerNote">
+      Uses FAA ArcGIS open data layers where available. Not an FAA product.
+    </div>
+    <div class="footerCopy">© 2026 CanIFlyHere.us</div>
+  </footer>
 </body>
 </html>
