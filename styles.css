@@ -431,3 +431,70 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
   outline: none !important;
 }
 
+/* ── Content block (below tool on homepage) ───── */
+.contentBlock {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.contentBlock h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 16px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+.contentBlock p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+.contentBlock ul {
+  margin: 0 0 10px;
+  padding-left: 16px;
+}
+.contentBlock li {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-bottom: 5px;
+}
+.contentBlock li strong {
+  color: var(--text);
+}
+.contentBlock a {
+  color: var(--accent);
+}
+
+/* Simple page subheadings */
+body.simple .panel h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 20px 0 6px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+body.simple .panel ul {
+  margin: 0 0 14px;
+  padding-left: 18px;
+}
+body.simple .panel li {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+body.simple .panel li strong { color: var(--text); }
+body.simple .panel code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+body.simple .panel em { color: var(--faint); font-size: 13px; }

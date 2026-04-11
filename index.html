@@ -7,22 +7,15 @@
   <meta name="description" content="Check FAA airspace restrictions before you fly. CanIFlyHere.us overlays UAS Facility Maps and national security flight restrictions on an interactive map — get a clear Go/No-Go in seconds." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://caniflyhere.us/" />
-
-  <!-- Open Graph -->
   <meta property="og:title" content="CanIFlyHere.us — Drone Airspace Checker" />
   <meta property="og:description" content="Instantly check FAA airspace restrictions for any location. Free planning tool for recreational drone pilots." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://caniflyhere.us/" />
-
   <link rel="stylesheet" href="styles.css?v=3" />
-  <!-- ArcGIS JS API -->
   <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
   <script src="https://js.arcgis.com/4.30/"></script>
-
-  <!-- Google AdSense – Auto Ads (no slot ID required) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370" crossorigin="anonymous"></script>
 </head>
-
 <body>
   <header class="topbar">
     <div class="brand">
@@ -65,6 +58,26 @@
 
       <div class="disclaimer">
         <strong>Planning use only.</strong> This tool does not grant flight authorization. Temporary flight restrictions (TFRs) change frequently. Always verify with official FAA sources and local regulations before flying.
+      </div>
+
+      <div class="contentBlock">
+        <h3>What this tool checks</h3>
+        <p>CanIFlyHere.us queries six live FAA geospatial data layers when you select a point on the map:</p>
+        <ul>
+          <li><strong>UAS Facility Map (LAANC grid)</strong> — areas where drone flights may be authorized through the Low Altitude Authorization and Notification Capability (LAANC) system. The grid ceiling shown is the maximum altitude available for automated authorization.</li>
+          <li><strong>Permanent National Security Restrictions</strong> — airspace around sensitive DoD and government facilities where UAS operations are prohibited year-round.</li>
+          <li><strong>Part-Time National Security Restrictions</strong> — temporary national security flight restriction zones that are active on a scheduled or event-driven basis.</li>
+          <li><strong>Prohibited Areas</strong> — FAA-designated airspace where flight is prohibited at all times under 14 CFR Part 73.</li>
+          <li><strong>Recreational Flyer Fixed Sites</strong> — locations approved for recreational UAS operations by a Community Based Organization (CBO).</li>
+          <li><strong>FAA Recognized Identification Areas (FRIAs)</strong> — designated areas where drones without Remote ID equipment may still operate legally.</li>
+        </ul>
+
+        <h3>How to use the checker</h3>
+        <p>There are three ways to select a location: click directly on the map, press <em>Use my location</em> to auto-fill your current GPS coordinates, or manually type a latitude and longitude into the coordinate fields and press <em>Check this location</em>. The tool will query each FAA layer and return a verdict within a few seconds.</p>
+        <p>A <strong>green result</strong> means none of the checked layers cover your selected point — no LAANC authorization or special clearance appears to be required based on these datasets. A <strong>yellow result</strong> means the point falls inside a LAANC grid or other advisory zone — you should file a LAANC request through an approved provider such as Aloft before flying. A <strong>red result</strong> means the point is inside a prohibited or national security restricted area — do not fly without explicit FAA authorization.</p>
+
+        <h3>Important limitations</h3>
+        <p>This tool is a pre-flight planning aid, not an official FAA authorization system. It does not check temporary flight restrictions (TFRs), which can be issued with little notice for events, emergencies, or VIP movements. It also does not reflect local city or county ordinances that may restrict drone flight independently of FAA rules. Always cross-reference with the <a href="https://www.faa.gov/uas/recreational_fliers/where_can_i_fly/b4ufly" target="_blank" rel="noopener noreferrer">FAA B4UFLY app</a> and check <a href="https://tfr.faa.gov/tfr3/?page=map" target="_blank" rel="noopener noreferrer">active TFRs</a> before every flight.</p>
       </div>
     </section>
 
