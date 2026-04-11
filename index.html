@@ -1,95 +1,79 @@
 <!doctype html>
-<!--
-  Enhanced homepage for CanIFlyHere.us
-  This version refines layout, accessibility and interactivity while
-  maintaining a clean, modern dark‑themed appearance.  Key fixes include
-  proper verdict handling, styling for result cards and hiding the
-  advertisement placeholder when no ads are present.
--->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Improved description for SEO and sharing -->
-  <meta
-    name="description"
-    content="Check if it's safe to fly your drone in seconds. CanIFlyHere.us overlays FAA UAS Facility Maps and national security airspace restrictions on an interactive map to give you a quick Go/No‑Go verdict."
-  />
+  <title>CanIFlyHere.us | Drone Airspace Checker</title>
+  <meta name="description" content="Check FAA airspace restrictions before you fly. CanIFlyHere.us overlays UAS Facility Maps and national security flight restrictions on an interactive map — get a clear Go/No-Go in seconds." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://caniflyhere.us/" />
 
-  <title>CanIFlyHere.us | Drone Airspace Check</title>
+  <!-- Open Graph -->
+  <meta property="og:title" content="CanIFlyHere.us — Drone Airspace Checker" />
+  <meta property="og:description" content="Instantly check FAA airspace restrictions for any location. Free planning tool for recreational drone pilots." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://caniflyhere.us/" />
 
-  <link rel="stylesheet" href="styles.css" />
-  <link
-    rel="stylesheet"
-    href="https://js.arcgis.com/4.30/esri/themes/light/main.css"
-  />
+  <link rel="stylesheet" href="styles.css?v=3" />
+  <!-- ArcGIS JS API -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
   <script src="https://js.arcgis.com/4.30/"></script>
 
-  <!-- Google AdSense (hidden until approved) -->
-  <script
-    async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370"
-    crossorigin="anonymous"
-  ></script>
+  <!-- Google AdSense – Auto Ads (no slot ID required) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <!-- Site header with brand and navigation -->
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true">✈️</div>
       <div class="brandText">
         <div class="title">CanIFlyHere.us</div>
-        <div class="subtitle">
-          Drone airspace awareness using FAA data (planning tool)
-        </div>
+        <div class="subtitle">FAA airspace checker for drone pilots</div>
       </div>
     </div>
-</header>
+  </header>
 
   <main class="layout">
     <section class="panel">
       <h2>Check a location</h2>
-      <p class="helper">
-        Click the map, use your location, or paste coordinates. You will
-        receive a simple verdict with optional details.
-      </p>
+      <p class="helper">Click the map, use your device location, or enter coordinates below to get an airspace verdict.</p>
+
       <div class="btnRow">
-        <button id="btnLocate" class="btn primary">Use my location</button>
+        <button id="btnLocate" class="btn primary">📍 Use my location</button>
         <button id="btnClear" class="btn">Clear</button>
       </div>
+
       <div class="inputGrid">
         <div class="inputGroup">
           <label for="lat">Latitude</label>
-          <input id="lat" inputmode="decimal" placeholder="30.628000" />
+          <input id="lat" inputmode="decimal" placeholder="30.628000" autocomplete="off" />
         </div>
         <div class="inputGroup">
           <label for="lng">Longitude</label>
-          <input id="lng" inputmode="decimal" placeholder="-96.334400" />
+          <input id="lng" inputmode="decimal" placeholder="-96.334400" autocomplete="off" />
         </div>
       </div>
-      <button id="btnGo" class="btn primary wide">Check location</button>
-      <!-- Hide ad slot by default; it will be displayed automatically when ads load -->
-      <div class="adSlot" aria-label="Advertisement">
-        <div class="adLabel">Advertisement</div>
-        <div class="adBox">Ad space</div>
-      </div>
-      <!-- Live region for status updates for screen readers -->
+
+      <button id="btnGo" class="btn primary wide">Check this location</button>
+
       <div id="status" class="status muted" aria-live="polite">
-        Tip: click anywhere on the map to run a check.
+        Click the map or enter coordinates to run a check.
       </div>
-<div id="results" class="results"></div>
+
+      <div id="results" class="results"></div>
+
       <div class="disclaimer">
-        <strong>Important:</strong> This is a planning tool. It does not
-        grant flight approval. TFRs can change fast. Always verify using
-        official FAA sources before flying.
+        <strong>Planning use only.</strong> This tool does not grant flight authorization. Temporary flight restrictions (TFRs) change frequently. Always verify with official FAA sources and local regulations before flying.
       </div>
     </section>
+
     <section class="mapWrap">
       <div id="viewDiv"></div>
-      <div class="mapTip">Tip: click anywhere on the map to run a check</div>
+      <div class="mapTip">Click anywhere on the map to check airspace</div>
     </section>
   </main>
+
   <footer class="footer">
     <div class="footerLinks">
       <a href="index.html">Home</a>
@@ -100,11 +84,10 @@
       <span>•</span>
       <a href="terms.html">Terms</a>
     </div>
-    <div class="footerNote">
-      Uses FAA ArcGIS open data layers where available. Not an FAA product.
-    </div>
+    <div class="footerNote">Uses FAA ArcGIS open data. Not an FAA product. Not legal or regulatory advice.</div>
     <div class="footerCopy">© 2026 CanIFlyHere.us</div>
   </footer>
-  <script src="app.js"></script>
+
+  <script src="app.js?v=3"></script>
 </body>
 </html>
