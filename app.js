@@ -1,12 +1,7 @@
 /*
-  CanIFlyHere.us – enhanced JS logic
-
-  This module drives the interactive map and verdict logic for the
-  CanIFlyHere.us planning tool.
-
-  NOTE:
-  - No verdict card UI is used anymore (only the status bar + result cards).
-  - Always verify with official FAA sources.
+  CanIFlyHere.us – map and airspace query logic
+  Queries FAA ArcGIS feature layers and displays results in the sidebar.
+  Requires ArcGIS JS API 4.30 loaded via CDN.
 */
 
 require([
@@ -32,7 +27,8 @@ require([
   SimpleLineSymbol,
   SimpleMarkerSymbol
 ) {
-  /* ---------------- DOM references ---------------- */
+
+  /* ── DOM refs ─────────────────────────────── */
   const statusEl  = document.getElementById("status");
   const resultsEl = document.getElementById("results");
   const latEl     = document.getElementById("lat");
@@ -41,16 +37,13 @@ require([
   const btnLocate = document.getElementById("btnLocate");
   const btnClear  = document.getElementById("btnClear");
 
-  // Guard: if homepage DOM isn't present, don't run (prevents errors if app.js loads elsewhere)
   if (!statusEl || !resultsEl || !latEl || !lngEl || !btnGo || !btnLocate || !btnClear) {
-    console.warn("CanIFlyHere: required DOM elements not found. app.js not initialized.");
-    return;
+    return; // not on the homepage
   }
 
-  function setStatus(msg, state = "muted") {
+  function setStatus(msg, state) {
     statusEl.textContent = msg;
-    // if state is "" or null, don't add extra class
-    statusEl.className = "status" + (state ? (" " + state) : "");
+    statusEl.className = "status" + (state ? " " + state : "");
   }
 
   function clearResults() {
@@ -68,7 +61,7 @@ require([
     t.textContent = title;
 
     const b = document.createElement("div");
-    b.className = `badge ${kind}`;
+    b.className = "badge " + kind;
     b.textContent = badge;
 
     head.appendChild(t);
@@ -77,13 +70,13 @@ require([
     const kv = document.createElement("div");
     kv.className = "kv";
 
-    rows.forEach(([k, v]) => {
+    rows.forEach(function(pair) {
       const kk = document.createElement("div");
       kk.className = "k";
-      kk.textContent = k;
+      kk.textContent = pair[0];
 
       const vv = document.createElement("div");
-      vv.textContent = v;
+      vv.textContent = pair[1];
 
       kv.appendChild(kk);
       kv.appendChild(vv);
@@ -94,65 +87,80 @@ require([
     resultsEl.appendChild(card);
   }
 
-  /* ---------------- Map styling ---------------- */
-  function polygonRenderer(color, opacity) {
+  /* ── Layer renderers ──────────────────────── */
+  // Semi-transparent fills so basemap roads/labels remain visible underneath
+  function makeFillRenderer(fillRgba, outlineRgba) {
     return new SimpleRenderer({
       symbol: new SimpleFillSymbol({
-        color: [...color, opacity],
-        outline: new SimpleLineSymbol({
-          color: [0, 0, 0, 20],
-          width: 0.4
-        })
+        color: fillRgba,
+        outline: new SimpleLineSymbol({ color: outlineRgba, width: 1 })
       })
     });
   }
 
-  function pointRenderer(color) {
-    return new SimpleRenderer({
-      symbol: new SimpleMarkerSymbol({
-        size: 7,
-        color,
-        outline: { color: [0, 0, 0, 80], width: 0.8 }
-      })
-    });
-  }
-
-  /* ---------------- FAA Layers ---------------- */
+  /* ── FAA layer definitions ────────────────── */
   const LAYERS = [
     {
-      key: "uasfm",
-      title: "LAANC Grid",
-      url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data_V5/FeatureServer/0",
-      renderer: polygonRenderer([255, 204, 102], 40),
-      hitBadge: "LAANC authorization likely",
-      hitKind: "warn",
-      fields: ["MAX_ALT", "GRID_MAX_ALT"]
+      key:      "uasfm",
+      title:    "LAANC / UAS Facility Map Grid",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_UAS_FacilityMap_Data/FeatureServer/0",
+      renderer: makeFillRenderer([14, 165, 233, 0.18], [14, 165, 233, 0.7]),
+      hitBadge: "Authorization likely",
+      hitKind:  "warn",
+      fields:   ["MAX_ALT", "CEILING", "GRID_MAX_ALT"]
     },
     {
-      key: "ns_part",
-      title: "National Security UAS Restriction",
-      url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Part_Time_National_Security_UAS_Flight_Restrictions/FeatureServer/0",
-      renderer: polygonRenderer([255, 90, 107], 55),
+      key:      "ns_full",
+      title:    "Permanent National Security Restriction",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/DoD_Mar_13/FeatureServer/0",
+      renderer: makeFillRenderer([244, 63, 94, 0.22], [244, 63, 94, 0.75]),
       hitBadge: "Do not fly",
-      hitKind: "bad",
-      fields: ["NAME", "START_TIME", "END_TIME"]
+      hitKind:  "bad",
+      fields:   ["NAME"]
     },
     {
-      key: "ns_full",
-      title: "Permanent National Security Restriction",
-      url: "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/DoD_Mar_13/FeatureServer/0",
-      renderer: polygonRenderer([255, 90, 107], 55),
+      key:      "ns_part",
+      title:    "Part-Time National Security Restriction",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Part_Time_National_Security_UAS_Flight_Restrictions/FeatureServer/0",
+      renderer: makeFillRenderer([249, 115, 22, 0.20], [249, 115, 22, 0.70]),
       hitBadge: "Do not fly",
-      hitKind: "bad",
-      fields: ["NAME"]
+      hitKind:  "bad",
+      fields:   ["NAME", "START_TIME", "END_TIME"]
+    },
+    {
+      key:      "prohibited",
+      title:    "Prohibited Area",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Prohibited_Areas/FeatureServer/0",
+      renderer: makeFillRenderer([220, 38, 38, 0.28], [220, 38, 38, 0.85]),
+      hitBadge: "Do not fly",
+      hitKind:  "bad",
+      fields:   ["NAME"]
+    },
+    {
+      key:      "rec_flyer",
+      title:    "Recreational Flyer Fixed Site",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Recreational_Flyer_Fixed_Sites/FeatureServer/0",
+      renderer: makeFillRenderer([34, 211, 165, 0.18], [34, 211, 165, 0.65]),
+      hitBadge: "Fixed site nearby",
+      hitKind:  "warn",
+      fields:   ["NAME"]
+    },
+    {
+      key:      "fria",
+      title:    "FAA Recognized Identification Area (FRIA)",
+      url:      "https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/FAA_Recognized_Identification_Areas/FeatureServer/0",
+      renderer: makeFillRenderer([139, 92, 246, 0.18], [139, 92, 246, 0.65]),
+      hitBadge: "FRIA",
+      hitKind:  "warn",
+      fields:   ["NAME"]
     }
   ];
 
-  /* ---------------- Map Init ---------------- */
+  /* ── Map setup ────────────────────────────── */
   const map = new Map({ basemap: "streets-navigation-vector" });
   const featureLayers = {};
 
-  LAYERS.forEach(cfg => {
+  LAYERS.forEach(function(cfg) {
     const layer = new FeatureLayer({
       url: cfg.url,
       outFields: ["*"],
@@ -165,7 +173,7 @@ require([
 
   const view = new MapView({
     container: "viewDiv",
-    map,
+    map: map,
     center: [-96.3344, 30.6280],
     zoom: 9
   });
@@ -174,21 +182,19 @@ require([
 
   function placePin(point) {
     if (pin) view.graphics.remove(pin);
-
     pin = new Graphic({
       geometry: point,
       symbol: {
         type: "simple-marker",
-        size: 10,
-        color: [37, 99, 235, 180],
-        outline: { color: [255, 255, 255], width: 2 }
+        size: 11,
+        color: [14, 165, 233, 230],
+        outline: { color: [255, 255, 255, 220], width: 2 }
       }
     });
-
     view.graphics.add(pin);
   }
 
-  /* ---------------- Query Logic ---------------- */
+  /* ── Query ────────────────────────────────── */
   async function queryLayer(layer, point) {
     const q = layer.createQuery();
     q.geometry = geometryEngine.geodesicBuffer(point, 250, "meters");
@@ -196,129 +202,105 @@ require([
     q.returnGeometry = false;
     q.outFields = ["*"];
     q.num = 1;
-
     const res = await layer.queryFeatures(q);
     return res.features || [];
   }
 
   async function runCheck(point) {
     clearResults();
-    setStatus("Checking FAA airspace data…", "");
+    setStatus("Querying FAA airspace data…", "");
 
-    let danger = false;
+    let danger  = false;
     let caution = false;
 
     for (const cfg of LAYERS) {
-      const feats = await queryLayer(featureLayers[cfg.key], point);
-      if (feats.length > 0) {
-        const attrs = feats[0].attributes;
+      try {
+        const feats = await queryLayer(featureLayers[cfg.key], point);
+        if (feats.length > 0) {
+          const attrs = feats[0].attributes;
+          const rows = cfg.fields
+            .filter(function(f) { return attrs[f] !== undefined && attrs[f] !== null; })
+            .map(function(f) { return [f, String(attrs[f])]; });
 
-        const rows = cfg.fields
-          .filter(f => attrs[f] !== undefined)
-          .map(f => [f, String(attrs[f])]);
+          addCard(cfg.title, cfg.hitBadge, cfg.hitKind, rows);
 
-        addCard(cfg.title, cfg.hitBadge, cfg.hitKind, rows);
-
-        if (cfg.hitKind === "bad") danger = true;
-        if (cfg.hitKind === "warn") caution = true;
+          if (cfg.hitKind === "bad")  danger  = true;
+          if (cfg.hitKind === "warn") caution = true;
+        }
+      } catch (err) {
+        console.warn("Query error for layer " + cfg.key, err);
       }
     }
 
     if (danger) {
-      setStatus("Do not fly — FAA-restricted airspace detected at this point.", "bad");
+      setStatus("Do not fly — FAA-restricted airspace detected at this location.", "bad");
     } else if (caution) {
-      setStatus("Authorization likely — controlled airspace detected (LAANC may be required).", "warn");
+      setStatus("LAANC authorization likely required — controlled airspace detected.", "warn");
     } else {
-      setStatus("Looks clear — no key FAA restrictions detected. Still verify TFRs and local rules.", "good");
+      setStatus("No key FAA restrictions found. Verify TFRs and local rules before flying.", "good");
     }
   }
 
-  /* ---------------- Events ---------------- */
-  view.on("click", async e => {
+  /* ── Events ───────────────────────────────── */
+  view.on("click", async function(e) {
     const p = new Point({
-      latitude: e.mapPoint.latitude,
+      latitude:  e.mapPoint.latitude,
       longitude: e.mapPoint.longitude,
       spatialReference: { wkid: 4326 }
     });
-
     latEl.value = p.latitude.toFixed(6);
     lngEl.value = p.longitude.toFixed(6);
-
     placePin(p);
     view.goTo({ center: [p.longitude, p.latitude], zoom: 12 });
-
     await runCheck(p);
   });
 
-  btnGo.addEventListener("click", async () => {
+  btnGo.addEventListener("click", async function() {
     const lat = parseFloat(latEl.value);
     const lng = parseFloat(lngEl.value);
-
     if (isNaN(lat) || isNaN(lng)) {
-      setStatus("Enter valid coordinates.", "bad");
+      setStatus("Enter valid decimal coordinates.", "bad");
       return;
     }
-
-    const p = new Point({
-      latitude: lat,
-      longitude: lng,
-      spatialReference: { wkid: 4326 }
-    });
-
+    const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
     placePin(p);
     view.goTo({ center: [lng, lat], zoom: 12 });
-
     await runCheck(p);
   });
 
-  btnClear.addEventListener("click", () => {
+  btnClear.addEventListener("click", function() {
     latEl.value = "";
     lngEl.value = "";
-
     clearResults();
-
     if (pin) view.graphics.remove(pin);
     pin = null;
-
-    setStatus("Click the map or enter coordinates to check.", "muted");
+    setStatus("Click the map or enter coordinates to run a check.", "muted");
   });
 
-  btnLocate.addEventListener("click", () => {
+  btnLocate.addEventListener("click", function() {
     if (!navigator.geolocation) {
-      setStatus("Geolocation not supported in this browser.", "bad");
+      setStatus("Geolocation is not supported by this browser.", "bad");
       return;
     }
-
     setStatus("Getting your location…", "");
-
     navigator.geolocation.getCurrentPosition(
-      async pos => {
+      async function(pos) {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
         latEl.value = lat.toFixed(6);
         lngEl.value = lng.toFixed(6);
-
-        const p = new Point({
-          latitude: lat,
-          longitude: lng,
-          spatialReference: { wkid: 4326 }
-        });
-
+        const p = new Point({ latitude: lat, longitude: lng, spatialReference: { wkid: 4326 } });
         placePin(p);
         view.goTo({ center: [lng, lat], zoom: 12 });
-
         await runCheck(p);
       },
-      (err) => {
-        // common reasons: denied, timeout, unavailable
-        setStatus("Unable to access your location (permission denied or unavailable).", "bad");
+      function(err) {
+        setStatus("Location access denied or unavailable.", "bad");
         console.warn("Geolocation error:", err);
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
   });
 
-  // Initial message
-  setStatus("Tip: click anywhere on the map to run a check.", "muted");
+  setStatus("Click the map or enter coordinates to run a check.", "muted");
 });
