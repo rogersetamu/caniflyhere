@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>About | CanIFlyHere.us</title>
   <meta name="description" content="Learn how CanIFlyHere.us uses FAA open geospatial data to help drone pilots check airspace restrictions before flight." />
+  <meta name="theme-color" content="#080c10" />
   <link rel="canonical" href="https://caniflyhere.us/about.html" />
-  <link rel="stylesheet" href="styles.css?v=3" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css?v=4" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7736086979749370" crossorigin="anonymous"></script>
 </head>
 <body class="simple">
@@ -24,30 +30,30 @@
     <section class="panel">
       <h2>About CanIFlyHere.us</h2>
       <p>
-        <strong>CanIFlyHere.us</strong> is a free drone airspace planning tool that overlays publicly available Federal Aviation Administration (FAA) geospatial data onto an interactive map. It was built to give recreational and commercial drone pilots a fast, readable answer to the most common pre-flight question: is this location safe and legal to fly in?
+        <strong>CanIFlyHere.us</strong> is a free drone airspace planning tool that overlays publicly available Federal Aviation Administration geospatial data onto an interactive map. It was built to give recreational and commercial drone pilots a fast, readable answer to the most common pre-flight question: is this location safe and legal to fly in?
       </p>
 
       <h3>Why we built it</h3>
       <p>
-        The FAA publishes detailed airspace data through its ArcGIS open data platform, but interpreting those layers requires GIS knowledge that most pilots don't have. Existing tools are either buried inside complex aviation apps, require account creation, or don't clearly explain what each restriction means in plain terms. CanIFlyHere.us presents the same official data in a single-click interface with plain-language verdicts.
+        The FAA publishes detailed airspace data through its ArcGIS open data platform, but interpreting those layers usually requires GIS knowledge that most pilots do not have. Existing tools are often buried inside larger aviation apps, require account creation, or do not explain restrictions clearly in plain language. CanIFlyHere.us presents the same official public data in a simpler, faster interface.
       </p>
 
       <h3>Data sources</h3>
       <p>
-        All airspace data is pulled in real time from the FAA's public ArcGIS feature services. No data is stored or cached on our servers — every query goes directly to the FAA's infrastructure. The layers checked are:
+        All airspace data is pulled in real time from the FAA's public ArcGIS feature services. No airspace data is stored or cached on our servers. The layers checked are:
       </p>
       <ul>
         <li><strong>FAA UAS Facility Map (LAANC grid)</strong> — defines areas eligible for automated LAANC authorization and shows the maximum approved altitude ceiling for each grid cell.</li>
         <li><strong>Permanent National Security UAS Flight Restrictions</strong> — DoD and federal facility no-fly zones that are active year-round.</li>
         <li><strong>Part-Time National Security UAS Flight Restrictions</strong> — scheduled or event-driven restricted zones around sensitive sites.</li>
         <li><strong>Prohibited Areas (14 CFR Part 73)</strong> — airspace where flight is forbidden by regulation at all times.</li>
-        <li><strong>Recreational Flyer Fixed Sites</strong> — CBO-approved locations for recreational drone operations.</li>
+        <li><strong>Recreational Flyer Fixed Sites</strong> — approved locations for recreational drone operations.</li>
         <li><strong>FAA Recognized Identification Areas (FRIAs)</strong> — zones where Remote ID-exempt drones may still operate legally.</li>
       </ul>
 
       <h3>What this tool does not cover</h3>
       <p>
-        CanIFlyHere.us does not display temporary flight restrictions (TFRs), which are issued dynamically and change frequently. It also does not reflect local city or county ordinances, state park rules, or private property restrictions. For TFRs, use the <a href="https://tfr.faa.gov/tfr3/?page=map" target="_blank" rel="noopener noreferrer">FAA TFR map</a> or the B4UFLY mobile app before every flight.
+        CanIFlyHere.us does not display temporary flight restrictions, which are issued dynamically and can change frequently. It also does not reflect local city or county ordinances, state park rules, or private property restrictions. For TFRs, use the <a href="https://tfr.faa.gov/tfr3/?page=map" target="_blank" rel="noopener noreferrer">FAA TFR map</a> or the B4UFLY mobile app before every flight.
       </p>
 
       <h3>Accuracy and liability</h3>
@@ -57,7 +63,7 @@
 
       <h3>Feedback</h3>
       <p>
-        This is an independent open project. Bug reports and feature suggestions are welcome via the <a href="https://github.com/rogersetamu/caniflyhere" target="_blank" rel="noopener noreferrer">GitHub repository</a>.
+        This is an independent project. Bug reports and feature suggestions are welcome through the <a href="https://github.com/rogersetamu/caniflyhere" target="_blank" rel="noopener noreferrer">GitHub repository</a>.
       </p>
     </section>
 

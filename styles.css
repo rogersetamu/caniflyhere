@@ -1,10 +1,8 @@
 /*
   CanIFlyHere.us – core stylesheet
   Aesthetic: precision-instrument / aeronautical chart meets modern utility
-  Fonts: DM Mono (data readouts) + Outfit (UI text)
+  Fonts are loaded in HTML for better performance.
 */
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@400;600;700;800&display=swap');
 
 :root {
   --bg:      #080c10;
@@ -36,6 +34,7 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body::before {
@@ -204,11 +203,6 @@ a:hover { text-decoration: underline; }
 .inputGroup input::placeholder { color: var(--faint); }
 
 /* ── AdSense units ────────────────────────────── */
-/*
-  Real AdSense ads are injected by Google into <ins class="adsbygoogle">
-  elements. We size the containers but show NO placeholder content —
-  Google's policy prohibits fake "Ad space" labels next to real ad slots.
-*/
 .adUnit {
   display: block;
   margin-top: 14px;
@@ -394,9 +388,6 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
 }
 
 /* ── ArcGIS widget dark overrides ─────────────── */
-/* The ESRI light theme injects white/grey backgrounds on map controls.
-   These overrides keep zoom buttons, attribution, and popups consistent
-   with the dark UI. */
 .esri-ui .esri-component,
 .esri-zoom .esri-widget--button,
 .esri-widget--button {
