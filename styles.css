@@ -489,3 +489,9 @@ body.simple .panel code {
   border-radius: 4px;
 }
 body.simple .panel em { color: var(--faint); font-size: 13px; }
+
+.logoImg {
+  height: 34px;
+  width: auto;
+  display: block;
+}

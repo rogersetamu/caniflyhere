@@ -4,15 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CanIFlyHere.us | Drone Airspace Checker</title>
+
   <meta name="description" content="Check FAA airspace restrictions before you fly. CanIFlyHere.us overlays UAS Facility Maps and national security flight restrictions on an interactive map and gives you a clear go or no-go verdict in seconds." />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#080c10" />
+
   <link rel="canonical" href="https://caniflyhere.us/" />
 
+  <link rel="icon" href="/favicon.png" type="image/png">
+
   <meta property="og:title" content="CanIFlyHere.us — Drone Airspace Checker" />
-  <meta property="og:description" content="Instantly check FAA airspace restrictions for any location. Free planning tool for recreational and commercial drone pilots." />
+  <meta property="og:description" content="Instantly check FAA airspace restrictions for any location." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://caniflyhere.us/" />
+
+
+  <meta property="og:image" content="https://caniflyhere.us/og-image.png" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://caniflyhere.us/og-image.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +30,8 @@
   <link rel="preconnect" href="https://services6.arcgis.com">
 
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4" />
+
+  <link rel="stylesheet" href="styles.css?v=5" />
   <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
 
   <script src="https://js.arcgis.com/4.30/"></script>
@@ -28,13 +39,13 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">✈️</div>
+    <a href="/" class="brand">
+      <img src="/favicon.png" alt="CanIFlyHere.us logo" class="logoImg" />
       <div class="brandText">
         <div class="title">CanIFlyHere.us</div>
         <div class="subtitle">FAA airspace checker for drone pilots</div>
       </div>
-    </div>
+    </a>
   </header>
 
   <main class="layout">
@@ -111,6 +122,6 @@
     <div class="footerCopy">© 2026 CanIFlyHere.us</div>
   </footer>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
