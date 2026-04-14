@@ -17,8 +17,6 @@
   <meta property="og:description" content="Instantly check FAA airspace restrictions for any location." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://caniflyhere.us/" />
-
-
   <meta property="og:image" content="https://caniflyhere.us/og-image.png" />
 
   <meta name="twitter:card" content="summary_large_image" />
@@ -31,7 +29,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
   <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
 
   <script src="https://js.arcgis.com/4.30/"></script>
@@ -81,24 +79,8 @@
         <strong>Planning use only.</strong> This tool does not grant flight authorization. Temporary flight restrictions can change quickly. Always verify with official FAA sources and local regulations before flying.
       </div>
 
-      <div class="contentBlock">
-        <h3>What this tool checks</h3>
-        <p>CanIFlyHere.us queries six live FAA geospatial data layers when you select a point on the map:</p>
-        <ul>
-          <li><strong>UAS Facility Map (LAANC grid)</strong> — areas where drone flights may be authorized through the Low Altitude Authorization and Notification Capability system. The grid ceiling shown is the maximum altitude available for automated authorization.</li>
-          <li><strong>Permanent National Security Restrictions</strong> — airspace around sensitive DoD and government facilities where UAS operations are prohibited year-round.</li>
-          <li><strong>Part-Time National Security Restrictions</strong> — temporary national security flight restriction zones that are active on a scheduled or event-driven basis.</li>
-          <li><strong>Prohibited Areas</strong> — FAA-designated airspace where flight is prohibited at all times under 14 CFR Part 73.</li>
-          <li><strong>Recreational Flyer Fixed Sites</strong> — locations approved for recreational UAS operations by a Community Based Organization.</li>
-          <li><strong>FAA Recognized Identification Areas (FRIAs)</strong> — designated areas where drones without Remote ID equipment may still operate legally.</li>
-        </ul>
-
-        <h3>How to use the checker</h3>
-        <p>There are three ways to select a location: click directly on the map, press <em>Use my location</em> to auto-fill your current GPS coordinates, or manually type a latitude and longitude into the coordinate fields and press <em>Check this location</em>. The tool will query each FAA layer and return a verdict within a few seconds.</p>
-        <p>A <strong>green result</strong> means none of the checked layers cover your selected point. A <strong>yellow result</strong> means the point falls inside controlled airspace or an advisory zone. A <strong>red result</strong> means the point is inside a prohibited or actively restricted area and should be treated as a no-fly location unless you have explicit authorization.</p>
-
-        <h3>Important limitations</h3>
-        <p>This tool is a pre-flight planning aid, not an official FAA authorization system. It does not check temporary flight restrictions, which can be issued with little notice for events, emergencies, or VIP movements. It also does not reflect local city or county ordinances that may restrict drone flight independently of FAA rules. Always cross-reference with the <a href="https://www.faa.gov/uas/recreational_fliers/where_can_i_fly/b4ufly" target="_blank" rel="noopener noreferrer">FAA B4UFLY app</a> and check <a href="https://tfr.faa.gov/tfr3/?page=map" target="_blank" rel="noopener noreferrer">active TFRs</a> before every flight.</p>
+      <div class="infoActions">
+        <button id="btnOpenInfo" class="btn">About this tool</button>
       </div>
     </section>
 
@@ -107,6 +89,48 @@
       <div class="mapTip">Click anywhere on the map to check airspace</div>
     </section>
   </main>
+
+  <div id="infoModal" class="modalOverlay hidden" aria-hidden="true">
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+      <button id="btnCloseInfo" class="modalClose" type="button" aria-label="Close popup">×</button>
+
+      <div class="modalHeader">
+        <h2 id="infoModalTitle">Before you fly</h2>
+        <p class="modalSubtext">This tool is built for fast pre-flight checks, but there are a few things you should know first.</p>
+      </div>
+
+      <div class="modalContent">
+        <div class="contentBlock modalContentBlock">
+          <h3>What this tool checks</h3>
+          <p>CanIFlyHere.us queries six live FAA geospatial data layers when you select a point on the map:</p>
+          <ul>
+            <li><strong>UAS Facility Map (LAANC grid)</strong> — areas where drone flights may be authorized through the Low Altitude Authorization and Notification Capability system. The grid ceiling shown is the maximum altitude available for automated authorization.</li>
+            <li><strong>Permanent National Security Restrictions</strong> — airspace around sensitive DoD and government facilities where UAS operations are prohibited year-round.</li>
+            <li><strong>Part-Time National Security Restrictions</strong> — temporary national security flight restriction zones that are active on a scheduled or event-driven basis.</li>
+            <li><strong>Prohibited Areas</strong> — FAA-designated airspace where flight is prohibited at all times under 14 CFR Part 73.</li>
+            <li><strong>Recreational Flyer Fixed Sites</strong> — locations approved for recreational UAS operations by a Community Based Organization.</li>
+            <li><strong>FAA Recognized Identification Areas (FRIAs)</strong> — designated areas where drones without Remote ID equipment may still operate legally.</li>
+          </ul>
+
+          <h3>How to use the checker</h3>
+          <p>There are three ways to select a location: click directly on the map, press <em>Use my location</em> to auto-fill your current GPS coordinates, or manually type a latitude and longitude into the coordinate fields and press <em>Check this location</em>. The tool will query each FAA layer and return a verdict within a few seconds.</p>
+          <p>A <strong>green result</strong> means none of the checked layers cover your selected point. A <strong>yellow result</strong> means the point falls inside controlled airspace or an advisory zone. A <strong>red result</strong> means the point is inside a prohibited or actively restricted area and should be treated as a no-fly location unless you have explicit authorization.</p>
+
+          <h3>Important limitations</h3>
+          <p>This tool is a pre-flight planning aid, not an official FAA authorization system. It does not check temporary flight restrictions, which can be issued with little notice for events, emergencies, or VIP movements. It also does not reflect local city or county ordinances that may restrict drone flight independently of FAA rules. Always cross-reference with the <a href="https://www.faa.gov/uas/recreational_fliers/where_can_i_fly/b4ufly" target="_blank" rel="noopener noreferrer">FAA B4UFLY app</a> and check <a href="https://tfr.faa.gov/tfr3/?page=map" target="_blank" rel="noopener noreferrer">active TFRs</a> before every flight.</p>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <label class="dontShowRow" for="dontShowInfoAgain">
+          <input type="checkbox" id="dontShowInfoAgain" />
+          <span>Don’t show this again</span>
+        </label>
+
+        <button id="btnGotIt" class="btn primary" type="button">Got it</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="footerLinks">
@@ -122,6 +146,6 @@
     <div class="footerCopy">© 2026 CanIFlyHere.us</div>
   </footer>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

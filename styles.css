@@ -66,7 +66,12 @@ a:hover { text-decoration: underline; }
   z-index: 100;
 }
 
-.brand { display: flex; align-items: center; gap: 12px; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
 
 .logo {
   width: 34px;
@@ -77,6 +82,17 @@ a:hover { text-decoration: underline; }
   background: linear-gradient(135deg, rgba(56,189,248,0.18), rgba(56,189,248,0.06));
   border: 1px solid rgba(56,189,248,0.25);
   font-size: 17px;
+}
+
+.logoImg {
+  height: 34px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.brandText {
+  min-width: 0;
 }
 
 .brandText .title {
@@ -144,7 +160,11 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Buttons ──────────────────────────────────── */
-.btnRow { display: flex; gap: 8px; margin-bottom: 12px; }
+.btnRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
 .btn {
   border: 1px solid var(--border);
@@ -156,8 +176,9 @@ a:hover { text-decoration: underline; }
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: 13px;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
+
 .btn:hover { background: rgba(255,255,255,0.07); }
 .btn:active { transform: translateY(1px); }
 
@@ -166,8 +187,17 @@ a:hover { text-decoration: underline; }
   background: rgba(56,189,248,0.12);
   color: #7dd3fc;
 }
+
 .btn.primary:hover { background: rgba(56,189,248,0.2); }
-.btn.wide { width: 100%; margin-bottom: 12px; }
+
+.btn.wide {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.infoActions {
+  margin-top: 14px;
+}
 
 /* ── Inputs ───────────────────────────────────── */
 .inputGrid {
@@ -199,6 +229,7 @@ a:hover { text-decoration: underline; }
   outline: none;
   transition: border-color 0.15s;
 }
+
 .inputGroup input:focus { border-color: rgba(56,189,248,0.45); }
 .inputGroup input::placeholder { color: var(--faint); }
 
@@ -230,13 +261,19 @@ a:hover { text-decoration: underline; }
   line-height: 1.4;
   transition: border-color 0.2s, color 0.2s;
 }
+
 .status.muted  { color: var(--muted); }
 .status.good   { color: var(--good); border-color: rgba(34,211,165,0.25); }
 .status.warn   { color: var(--warn); border-color: rgba(245,158,11,0.25); }
 .status.bad    { color: var(--bad);  border-color: rgba(244,63,94,0.25); }
 
 /* ── Result cards ─────────────────────────────── */
-.results { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.results {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .card {
   border: 1px solid var(--border);
@@ -272,6 +309,7 @@ a:hover { text-decoration: underline; }
   white-space: nowrap;
   text-transform: uppercase;
 }
+
 .badge.good { background: rgba(34,211,165,0.1);  border-color: rgba(34,211,165,0.25); color: var(--good); }
 .badge.warn { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.25); color: var(--warn); }
 .badge.bad  { background: rgba(244,63,94,0.1);   border-color: rgba(244,63,94,0.25);  color: var(--bad); }
@@ -283,13 +321,18 @@ a:hover { text-decoration: underline; }
   row-gap: 3px;
   margin-top: 6px;
 }
+
 .kv .k {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--muted);
   font-weight: 500;
 }
-.kv > div { font-size: 12px; color: var(--text); }
+
+.kv > div {
+  font-size: 12px;
+  color: var(--text);
+}
 
 /* ── Disclaimer ───────────────────────────────── */
 .disclaimer {
@@ -302,6 +345,7 @@ a:hover { text-decoration: underline; }
   border: 1px solid rgba(245,158,11,0.15);
   background: rgba(245,158,11,0.04);
 }
+
 .disclaimer strong { color: var(--warn); }
 
 /* ── Map ──────────────────────────────────────── */
@@ -312,9 +356,14 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--shadow);
   position: relative;
   background: #0a0f16;
+  min-width: 0;
 }
 
-#viewDiv { width: 100%; height: 100%; min-height: 500px; }
+#viewDiv {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+}
 
 .mapTip {
   position: absolute;
@@ -331,6 +380,105 @@ a:hover { text-decoration: underline; }
   backdrop-filter: blur(6px);
 }
 
+/* ── Modal ────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 10, 0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 1000;
+}
+
+.modalOverlay.hidden {
+  display: none;
+}
+
+.modalCard {
+  width: min(860px, 100%);
+  max-height: min(88vh, 900px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 18px 20px 10px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.modalHeader h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.modalSubtext {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modalContent {
+  padding: 0 20px;
+  overflow: auto;
+  max-height: calc(88vh - 150px);
+}
+
+.modalContentBlock {
+  margin-top: 0;
+  padding-top: 14px;
+  border-top: 0;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border2);
+  background: rgba(255,255,255,0.015);
+}
+
+.modalClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.dontShowRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dontShowRow input {
+  accent-color: var(--accent);
+}
+
 /* ── Footer ───────────────────────────────────── */
 .footer {
   padding: 11px 18px;
@@ -343,16 +491,200 @@ a:hover { text-decoration: underline; }
   position: relative;
   z-index: 1;
 }
-.footerLinks { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .footerLinks span { color: var(--faint); }
 .footerCopy { color: var(--faint); }
 
 /* ── Responsive ───────────────────────────────── */
 @media (max-width: 980px) {
-  .layout { grid-template-columns: 1fr; height: auto; }
-  .brandText .subtitle { max-width: 240px; }
-  #viewDiv { min-height: 480px; }
-  .inputGrid { grid-template-columns: 1fr 1fr; }
+  .layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .brandText .subtitle {
+    max-width: 240px;
+  }
+
+  #viewDiv {
+    min-height: 480px;
+  }
+
+  .inputGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Mobile polish ────────────────────────────── */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .brand {
+    gap: 10px;
+    width: 100%;
+  }
+
+  .logoImg {
+    height: 30px;
+  }
+
+  .brandText .title {
+    font-size: 14px;
+  }
+
+  .brandText .subtitle {
+    max-width: 180px;
+    font-size: 10px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    height: auto;
+  }
+
+  .panel {
+    overflow: visible;
+  }
+
+  .btnRow {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .btn.wide {
+    position: sticky;
+    bottom: 10px;
+    z-index: 15;
+  }
+
+  .inputGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .inputGroup input {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  #viewDiv {
+    min-height: 56vh;
+    height: 56vh;
+  }
+
+  .mapTip {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  .cardTitle {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .badge {
+    margin-top: 4px;
+  }
+
+  .modalOverlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modalCard {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .modalHeader {
+    padding: 16px 16px 10px;
+  }
+
+  .modalHeader h2 {
+    font-size: 20px;
+    padding-right: 34px;
+  }
+
+  .modalSubtext {
+    font-size: 14px;
+  }
+
+  .modalContent {
+    padding: 0 16px;
+    max-height: calc(88vh - 155px);
+  }
+
+  .modalFooter {
+    padding: 12px 16px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dontShowRow {
+    font-size: 14px;
+  }
+
+  .contentBlock p,
+  .contentBlock li,
+  .helper,
+  .disclaimer {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+/* ── Small phones ─────────────────────────────── */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 9px 10px;
+  }
+
+  .logoImg {
+    height: 28px;
+  }
+
+  .brandText .title {
+    font-size: 13px;
+  }
+
+  .brandText .subtitle {
+    display: none;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .panel h2 {
+    font-size: 16px;
+  }
+
+  .footer {
+    padding: 12px;
+  }
+
+  .footerLinks {
+    gap: 8px;
+  }
 }
 
 /* ── Simple pages (about / privacy / terms) ───── */
@@ -380,6 +712,7 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
     gap: 14px;
     align-items: start;
   }
+
   body.simple .sidePanel {
     position: sticky;
     top: 70px;
@@ -395,19 +728,23 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
   border-color: rgba(255,255,255,0.1) !important;
   color: #dde5ef !important;
 }
+
 .esri-zoom .esri-widget--button:hover,
 .esri-widget--button:hover {
   background-color: rgba(56,189,248,0.15) !important;
 }
+
 .esri-zoom .esri-widget--button:focus,
 .esri-widget--button:focus {
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(56,189,248,0.4) !important;
 }
+
 .esri-icon-plus::before,
 .esri-icon-minus::before {
   color: #dde5ef !important;
 }
+
 .esri-attribution,
 .esri-attribution__powered-by,
 .esri-attribution__sources {
@@ -415,19 +752,22 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
   color: rgba(255,255,255,0.45) !important;
   font-size: 10px !important;
 }
+
 .esri-attribution a {
   color: rgba(56,189,248,0.7) !important;
 }
+
 .esri-view .esri-view-surface--inset-outline:focus::after {
   outline: none !important;
 }
 
-/* ── Content block (below tool on homepage) ───── */
+/* ── Content block ────────────────────────────── */
 .contentBlock {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
+
 .contentBlock h3 {
   font-size: 13px;
   font-weight: 700;
@@ -437,25 +777,30 @@ body.simple .sidePanel { padding: 14px; margin-top: 14px; }
   letter-spacing: 0.5px;
   font-family: var(--font-mono);
 }
+
 .contentBlock p {
   font-size: 12px;
   color: var(--muted);
   line-height: 1.6;
   margin: 0 0 8px;
 }
+
 .contentBlock ul {
   margin: 0 0 10px;
   padding-left: 16px;
 }
+
 .contentBlock li {
   font-size: 12px;
   color: var(--muted);
   line-height: 1.55;
   margin-bottom: 5px;
 }
+
 .contentBlock li strong {
   color: var(--text);
 }
+
 .contentBlock a {
   color: var(--accent);
 }
@@ -470,17 +815,21 @@ body.simple .panel h3 {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
 body.simple .panel ul {
   margin: 0 0 14px;
   padding-left: 18px;
 }
+
 body.simple .panel li {
   font-size: 14px;
   color: var(--muted);
   line-height: 1.6;
   margin-bottom: 6px;
 }
+
 body.simple .panel li strong { color: var(--text); }
+
 body.simple .panel code {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -488,10 +837,8 @@ body.simple .panel code {
   padding: 1px 5px;
   border-radius: 4px;
 }
-body.simple .panel em { color: var(--faint); font-size: 13px; }
 
-.logoImg {
-  height: 34px;
-  width: auto;
-  display: block;
+body.simple .panel em {
+  color: var(--faint);
+  font-size: 13px;
 }

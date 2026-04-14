@@ -6,6 +6,7 @@
   - separate blocked / LAANC / advisory verdicts
   - exact point intersection for actual airspace checks
   - optional nearby search for fixed sites only
+  - first-visit info modal with localStorage
 */
 
 require([
@@ -28,6 +29,14 @@ require([
   const btnGo = document.getElementById("btnGo");
   const btnLocate = document.getElementById("btnLocate");
   const btnClear = document.getElementById("btnClear");
+
+  const infoModal = document.getElementById("infoModal");
+  const btnOpenInfo = document.getElementById("btnOpenInfo");
+  const btnCloseInfo = document.getElementById("btnCloseInfo");
+  const btnGotIt = document.getElementById("btnGotIt");
+  const dontShowInfoAgain = document.getElementById("dontShowInfoAgain");
+
+  const INFO_MODAL_STORAGE_KEY = "caniflyhere_hide_intro_modal_v1";
 
   if (!statusEl || !resultsEl || !latEl || !lngEl || !btnGo || !btnLocate || !btnClear) {
     return;
@@ -131,6 +140,75 @@ require([
         }
       }
     };
+  }
+
+  function showInfoModal() {
+    if (!infoModal) return;
+    infoModal.classList.remove("hidden");
+    infoModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideInfoModal() {
+    if (!infoModal) return;
+    infoModal.classList.add("hidden");
+    infoModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function saveModalPreference() {
+    if (!dontShowInfoAgain) return;
+    if (dontShowInfoAgain.checked) {
+      localStorage.setItem(INFO_MODAL_STORAGE_KEY, "true");
+    } else {
+      localStorage.removeItem(INFO_MODAL_STORAGE_KEY);
+    }
+  }
+
+  function setupInfoModal() {
+    if (!infoModal) return;
+
+    const shouldHide = localStorage.getItem(INFO_MODAL_STORAGE_KEY) === "true";
+
+    if (!shouldHide) {
+      window.setTimeout(function () {
+        showInfoModal();
+      }, 250);
+    }
+
+    if (btnOpenInfo) {
+      btnOpenInfo.addEventListener("click", function () {
+        showInfoModal();
+      });
+    }
+
+    if (btnCloseInfo) {
+      btnCloseInfo.addEventListener("click", function () {
+        saveModalPreference();
+        hideInfoModal();
+      });
+    }
+
+    if (btnGotIt) {
+      btnGotIt.addEventListener("click", function () {
+        saveModalPreference();
+        hideInfoModal();
+      });
+    }
+
+    infoModal.addEventListener("click", function (e) {
+      if (e.target === infoModal) {
+        saveModalPreference();
+        hideInfoModal();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !infoModal.classList.contains("hidden")) {
+        saveModalPreference();
+        hideInfoModal();
+      }
+    });
   }
 
   const LAYERS = [
@@ -417,5 +495,6 @@ require([
     );
   });
 
+  setupInfoModal();
   setStatus("Click the map or enter coordinates to run a check.", "muted");
 });
